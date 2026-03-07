@@ -35,11 +35,56 @@ export default function ImpressumScreen() {
           <View style={styles.iconWrap}>
             <Building2 size={24} color={Colors.accent} />
           </View>
-          <Text style={styles.title}>IMPRESSUM</Text>
+          <Text style={styles.title}>IMPRINT / IMPRESSUM</Text>
+        </View>
+
+        <View style={styles.langLabel}>
+          <Text style={styles.langLabelText}>ENGLISH</Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionBody}>Bruno Nataniel Cuíno Fernandes</Text>
+          <Text style={styles.sectionBody}>Bruno Nataniel Cuino Fernandes</Text>
+          <Text style={styles.sectionBody}>Boberstrasse 4</Text>
+          <Text style={styles.sectionBody}>22547 Hamburg</Text>
+          <Text style={styles.sectionBody}>Germany</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionBody}>Email: support@hybridload.com</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionBody}>VAT identification number: DE365735815</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Online dispute resolution</Text>
+          <Text style={styles.sectionBody}>
+            The European Commission provides a platform for online dispute resolution (ODR), which can be found at{' '}
+            <Text
+              style={styles.link}
+              onPress={() => Linking.openURL('https://ec.europa.eu/consumers/odr/')}
+            >
+              https://ec.europa.eu/consumers/odr/
+            </Text>
+            . We are not willing or obliged to participate in dispute resolution proceedings before a consumer arbitration board.
+          </Text>
+        </View>
+
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>
+            English version for convenience; the German version below is legally binding.
+          </Text>
+          <View style={styles.dividerLine} />
+        </View>
+
+        <View style={styles.langLabel}>
+          <Text style={styles.langLabelText}>DEUTSCH</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionBody}>Bruno Nataniel Cuino Fernandes</Text>
           <Text style={styles.sectionBody}>Boberstraße 4</Text>
           <Text style={styles.sectionBody}>22547 Hamburg</Text>
           <Text style={styles.sectionBody}>Deutschland</Text>
@@ -56,7 +101,7 @@ export default function ImpressumScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Online-Streitbeilegung</Text>
           <Text style={styles.sectionBody}>
-            Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit, die Sie unter{' '}
+            Die Europaische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit, die Sie unter{' '}
             <Text
               style={styles.link}
               onPress={() => Linking.openURL('https://ec.europa.eu/consumers/odr/')}
@@ -104,11 +149,20 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '900' as const,
     color: '#FFFFFF',
     letterSpacing: 1,
     marginBottom: 6,
+  },
+  langLabel: {
+    marginBottom: 16,
+  },
+  langLabelText: {
+    fontSize: 11,
+    fontWeight: '700' as const,
+    color: Colors.accent,
+    letterSpacing: 2,
   },
   section: {
     marginBottom: 20,
@@ -126,6 +180,24 @@ const styles = StyleSheet.create({
   },
   link: {
     color: Colors.accent,
-    textDecorationLine: 'underline',
+    textDecorationLine: 'underline' as const,
+  },
+  divider: {
+    marginVertical: 32,
+    alignItems: 'center',
+    gap: 12,
+  },
+  dividerLine: {
+    height: 1,
+    width: '100%',
+    backgroundColor: Colors.border,
+  },
+  dividerText: {
+    fontSize: 12,
+    color: Colors.textTertiary,
+    textAlign: 'center' as const,
+    lineHeight: 18,
+    fontStyle: 'italic' as const,
+    paddingHorizontal: 8,
   },
 });
