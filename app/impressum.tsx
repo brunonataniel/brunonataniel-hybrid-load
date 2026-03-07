@@ -49,6 +49,10 @@ export default function ImpressumScreen() {
         </View>
 
         <View style={styles.section}>
+          <Text style={styles.sectionBody}>Umsatzsteuer-Identifikationsnummer: DE365735815</Text>
+        </View>
+
+        <View style={styles.section}>
           <Text style={styles.sectionBody}>
             Wir sind zur Teilnahme an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle weder verpflichtet noch bereit.
           </Text>
