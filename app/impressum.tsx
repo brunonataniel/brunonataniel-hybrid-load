@@ -53,8 +53,9 @@ export default function ImpressumScreen() {
         </View>
 
         <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Online-Streitbeilegung</Text>
           <Text style={styles.sectionBody}>
-            Wir sind zur Teilnahme an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle weder verpflichtet noch bereit.
+            Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit, die Sie unter https://ec.europa.eu/consumers/odr/ finden. Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
           </Text>
         </View>
       </ScrollView>
@@ -103,6 +104,12 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: '700' as const,
+    color: '#FFFFFF',
+    marginBottom: 8,
   },
   sectionBody: {
     fontSize: 15,
