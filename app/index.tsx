@@ -297,14 +297,14 @@ export default function LandingScreen() {
           <TouchableOpacity onPress={() => router.push('/impressum')} testID="landing-impressum">
             <View style={styles.legalLink}>
               <Building2 size={14} color={Colors.textTertiary} />
-              <Text style={styles.legalText}>Impressum</Text>
+              <Text style={styles.legalText}>Imprint / Impressum</Text>
             </View>
           </TouchableOpacity>
           <View style={styles.legalDot} />
           <TouchableOpacity onPress={() => router.push('/privacy')} testID="landing-privacy">
             <View style={styles.legalLink}>
               <Shield size={14} color={Colors.textTertiary} />
-              <Text style={styles.legalText}>Datenschutz</Text>
+              <Text style={styles.legalText}>Privacy Policy / Datenschutz</Text>
             </View>
           </TouchableOpacity>
         </View>
