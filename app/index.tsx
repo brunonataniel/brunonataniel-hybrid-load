@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,10 +6,12 @@ import {
   ScrollView,
   TouchableOpacity,
   Animated,
+  TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Swords, Zap, Activity, Waves, Footprints, ChevronRight, Shield, FileText, Mail, Building2 } from 'lucide-react-native';
+import { Swords, Zap, Activity, Waves, Footprints, ChevronRight, Shield, Building2, Mail } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 
 const FEATURES = [
@@ -54,6 +56,9 @@ export default function LandingScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
+  const [email, setEmail] = useState<string>('');
+  const [submitState, setSubmitState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
   const heroAnim = useRef(new Animated.Value(0)).current;
   const featureAnims = useRef(FEATURES.map(() => new Animated.Value(0))).current;
   const ctaAnim = useRef(new Animated.Value(0)).current;
@@ -81,6 +86,36 @@ export default function LandingScreen() {
       useNativeDriver: true,
     }).start();
   }, [heroAnim, featureAnims, ctaAnim]);
+
+  const handleClaim = useCallback(async () => {
+    if (!email.trim() || submitState === 'loading') return;
+
+    console.log('[Landing] Submitting email to Formspree:', email);
+    setSubmitState('loading');
+
+    try {
+      const response = await fetch('https://formspree.io/f/mojkvdez', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+
+      if (response.ok) {
+        console.log('[Landing] Formspree submission success');
+        setSubmitState('success');
+        setEmail('');
+      } else {
+        console.log('[Landing] Formspree submission failed:', response.status);
+        setSubmitState('error');
+      }
+    } catch (err) {
+      console.log('[Landing] Formspree submission error:', err);
+      setSubmitState('error');
+    }
+  }, [email, submitState]);
 
   return (
     <View style={styles.container}>
@@ -195,6 +230,68 @@ export default function LandingScreen() {
           <Text style={styles.ctaNote}>Privacy First. Accounts only required for Pro Features.</Text>
         </Animated.View>
 
+        <View style={styles.waitlistSection}>
+          <View style={styles.waitlistHeader}>
+            <View style={styles.waitlistLine} />
+            <Text style={styles.waitlistLabel}>BETA WAITLIST</Text>
+            <View style={styles.waitlistLine} />
+          </View>
+
+          <View style={styles.inputRow}>
+            <TextInput
+              style={styles.emailInput}
+              placeholder="deine@email.de"
+              placeholderTextColor={Colors.textTertiary}
+              value={email}
+              onChangeText={(text) => {
+                setEmail(text);
+                if (submitState === 'success' || submitState === 'error') {
+                  setSubmitState('idle');
+                }
+              }}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              editable={submitState !== 'loading'}
+              testID="waitlist-email-input"
+            />
+            <TouchableOpacity
+              style={[
+                styles.claimButton,
+                submitState === 'loading' && styles.claimButtonDisabled,
+              ]}
+              activeOpacity={0.8}
+              onPress={handleClaim}
+              disabled={submitState === 'loading' || !email.trim()}
+              testID="waitlist-claim-button"
+            >
+              {submitState === 'loading' ? (
+                <ActivityIndicator size="small" color="#000000" />
+              ) : (
+                <Text style={styles.claimButtonText}>CLAIM</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {submitState === 'success' && (
+            <Text style={styles.successMessage}>Erfolgreich eingetragen!</Text>
+          )}
+          {submitState === 'error' && (
+            <Text style={styles.errorMessage}>Fehler. Bitte versuche es später erneut.</Text>
+          )}
+
+          <Text style={styles.consentText}>
+            Durch Klick auf den Button stimmst du unserer{' '}
+            <Text
+              style={styles.consentLink}
+              onPress={() => router.push('/privacy')}
+            >
+              Datenschutzerklärung
+            </Text>{' '}
+            zu.
+          </Text>
+        </View>
+
         <View style={styles.legalRow}>
           <TouchableOpacity onPress={() => router.push('/impressum')} testID="landing-impressum">
             <View style={styles.legalLink}>
@@ -206,14 +303,7 @@ export default function LandingScreen() {
           <TouchableOpacity onPress={() => router.push('/privacy')} testID="landing-privacy">
             <View style={styles.legalLink}>
               <Shield size={14} color={Colors.textTertiary} />
-              <Text style={styles.legalText}>Privacy</Text>
-            </View>
-          </TouchableOpacity>
-          <View style={styles.legalDot} />
-          <TouchableOpacity onPress={() => router.push('/terms')} testID="landing-terms">
-            <View style={styles.legalLink}>
-              <FileText size={14} color={Colors.textTertiary} />
-              <Text style={styles.legalText}>Terms</Text>
+              <Text style={styles.legalText}>Datenschutz</Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -406,6 +496,82 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 12,
     color: Colors.textTertiary,
+  },
+  waitlistSection: {
+    marginBottom: 40,
+  },
+  waitlistHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    gap: 12,
+  },
+  waitlistLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Colors.border,
+  },
+  waitlistLabel: {
+    fontSize: 11,
+    fontWeight: '700' as const,
+    color: Colors.textTertiary,
+    letterSpacing: 1.1,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 10,
+  },
+  emailInput: {
+    flex: 1,
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 15,
+    color: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  claimButton: {
+    backgroundColor: Colors.accent,
+    borderRadius: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 90,
+  },
+  claimButtonDisabled: {
+    opacity: 0.7,
+  },
+  claimButtonText: {
+    fontSize: 14,
+    fontWeight: '800' as const,
+    color: '#000000',
+    letterSpacing: 1.2,
+  },
+  successMessage: {
+    fontSize: 13,
+    color: '#4ADE80',
+    fontWeight: '600' as const,
+    marginBottom: 8,
+  },
+  errorMessage: {
+    fontSize: 13,
+    color: '#F87171',
+    fontWeight: '600' as const,
+    marginBottom: 8,
+  },
+  consentText: {
+    fontSize: 11,
+    color: Colors.textTertiary,
+    lineHeight: 16,
+    marginTop: 4,
+  },
+  consentLink: {
+    color: Colors.textSecondary,
+    textDecorationLine: 'underline',
   },
   legalRow: {
     flexDirection: 'row',
