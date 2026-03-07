@@ -1,7 +1,8 @@
 {
-  "name": "expo-app",
+  "name": "hybridload",
   "main": "expo-router/entry",
   "version": "1.0.0",
+  "homepage": "https://hybridload.com",
   "scripts": {
     "start": "bunx rork start -p o201je5fvzz2bgyq55p6k --tunnel",
     "start-web": "bunx rork start -p o201je5fvzz2bgyq55p6k --web --tunnel",
@@ -52,6 +53,5 @@
     "eslint-config-expo": "~10.0.0",
     "typescript": "~5.9.2"
   },
-  "private": true,
-  "homepage": "https://hybridload.com"
+  "private": true
 }
