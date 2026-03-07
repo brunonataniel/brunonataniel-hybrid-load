@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Linking,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -55,7 +56,14 @@ export default function ImpressumScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Online-Streitbeilegung</Text>
           <Text style={styles.sectionBody}>
-            Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit, die Sie unter https://ec.europa.eu/consumers/odr/ finden. Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
+            Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit, die Sie unter{' '}
+            <Text
+              style={styles.link}
+              onPress={() => Linking.openURL('https://ec.europa.eu/consumers/odr/')}
+            >
+              https://ec.europa.eu/consumers/odr/
+            </Text>
+            {' '}finden. Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
           </Text>
         </View>
       </ScrollView>
@@ -115,5 +123,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: Colors.textSecondary,
     lineHeight: 24,
+  },
+  link: {
+    color: Colors.accent,
+    textDecorationLine: 'underline',
   },
 });
