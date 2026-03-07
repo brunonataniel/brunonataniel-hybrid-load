@@ -8,6 +8,7 @@ import {
   Animated,
   TextInput,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -308,10 +309,10 @@ export default function LandingScreen() {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.contactRow}>
+        <TouchableOpacity style={styles.contactRow} onPress={() => Linking.openURL('mailto:support@hybridload.com')}>
           <Mail size={13} color={Colors.textTertiary} />
           <Text style={styles.contactText}>support@hybridload.com</Text>
-        </View>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
