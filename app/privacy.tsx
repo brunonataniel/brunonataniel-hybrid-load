@@ -83,7 +83,6 @@ export default function PrivacyScreen() {
           <Text style={styles.copyrightText}>
             Diese Datenschutzerklärung wurde von den Fachanwälten der IT-Recht Kanzlei erstellt und ist urheberrechtlich geschützt.
           </Text>
-          <Text style={styles.copyrightDate}>Stand: 07.03.2026</Text>
         </View>
       </ScrollView>
     </View>
