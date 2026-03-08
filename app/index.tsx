@@ -116,7 +116,7 @@ function AnimatedWeightDisplay({ animValue }: { animValue: Animated.Value }) {
 
   useEffect(() => {
     const id = animValue.addListener(({ value }) => {
-      const weight = 140 - (value * 20);
+      const weight = 140 - (value * 25);
       const rounded = Math.round(weight);
       const text = String(rounded);
       updateText(text);
