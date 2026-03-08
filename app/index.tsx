@@ -403,7 +403,7 @@ export default function LandingScreen() {
               {submitState === 'loading' ? (
                 <ActivityIndicator size="small" color="#000000" />
               ) : (
-                <Text style={styles.claimButtonText}>CLAIM LIFETIME ACCESS</Text>
+                <Text style={styles.claimButtonText}>CLAIM</Text>
               )}
             </TouchableOpacity>
           </View>
