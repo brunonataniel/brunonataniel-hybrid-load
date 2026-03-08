@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Platform, Animated, Easing } 
 
 import * as Haptics from 'expo-haptics';
 import { Swords, Footprints, Zap, Waves, PersonStanding } from 'lucide-react-native';
-import { FatigueType, LiftType, FATIGUE_OPTIONS, getFatigueReductionPercent, getScaledFatiguePercent } from '@/utils/plateCalculator';
+import { FatigueType, LiftType, FATIGUE_OPTIONS, getFatigueReductionPercent, getScaledFatiguePercent, getMarginalFatiguePercent } from '@/utils/plateCalculator';
 import { Colors } from '@/constants/colors';
 
 interface FatigueCheckInProps {
@@ -97,12 +97,14 @@ function FatigueOption({
   type,
   label,
   scaledPercent,
+  isAdjusted,
   isActive,
   onToggle,
 }: {
   type: FatigueType;
   label: string;
   scaledPercent: number;
+  isAdjusted: boolean;
   isActive: boolean;
   onToggle: (type: FatigueType) => void;
 }) {
@@ -139,6 +141,9 @@ function FatigueOption({
           {label}
         </Text>
         <AnimatedPercent value={scaledPercent} />
+        {isAdjusted && !isActive && (
+          <Text style={styles.adjLabel}>ADJ.</Text>
+        )}
       </TouchableOpacity>
     </Animated.View>
   );
@@ -196,16 +201,21 @@ export default React.memo(function FatigueCheckIn({ value, onChange, isProUnlock
         </Animated.View>
       </View>
       <View style={styles.grid}>
-        {FATIGUE_OPTIONS.map((opt) => (
-          <FatigueOption
-            key={opt.type}
-            type={opt.type}
-            label={opt.label}
-            scaledPercent={getScaledFatiguePercent(opt.type, selectedLift)}
-            isActive={value.includes(opt.type)}
-            onToggle={handleToggle}
-          />
-        ))}
+        {FATIGUE_OPTIONS.map((opt) => {
+          const isActive = value.includes(opt.type);
+          const marginal = getMarginalFatiguePercent(opt.type, selectedLift, value);
+          return (
+            <FatigueOption
+              key={opt.type}
+              type={opt.type}
+              label={opt.label}
+              scaledPercent={isActive ? getScaledFatiguePercent(opt.type, selectedLift) : marginal.percent}
+              isAdjusted={marginal.isAdjusted}
+              isActive={isActive}
+              onToggle={handleToggle}
+            />
+          );
+        })}
       </View>
     </View>
   );
@@ -303,5 +313,13 @@ const styles = StyleSheet.create({
   optionReductionActive: {
     color: Colors.accent,
     opacity: 1,
+  },
+  adjLabel: {
+    fontSize: 8,
+    fontWeight: '600' as const,
+    letterSpacing: 0.5,
+    color: Colors.accent,
+    opacity: 0.7,
+    marginTop: -4,
   },
 });

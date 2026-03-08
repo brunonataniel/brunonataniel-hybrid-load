@@ -199,3 +199,24 @@ export function getScaledFatiguePercent(fatigueType: FatigueType, lift: LiftType
   const scaling = getLiftScaling(lift, fatigueType);
   return Math.round(base * scaling * 100);
 }
+
+export function getMarginalFatiguePercent(
+  fatigueType: FatigueType,
+  lift: LiftType,
+  activeFatigues: FatigueType[],
+): { percent: number; isAdjusted: boolean } {
+  const base = FATIGUE_REDUCTIONS[fatigueType] ?? 0;
+  const scaling = getLiftScaling(lift, fatigueType);
+  const fullPercent = Math.round(base * scaling * 100);
+
+  if (activeFatigues.length === 0) {
+    return { percent: fullPercent, isAdjusted: false };
+  }
+
+  if (activeFatigues.includes(fatigueType)) {
+    return { percent: fullPercent, isAdjusted: false };
+  }
+
+  const marginal = base * scaling * SYSTEMIC_OVERLAY_FACTOR;
+  return { percent: Math.round(marginal * 100), isAdjusted: true };
+}
