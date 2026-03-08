@@ -181,8 +181,17 @@ export function getMarginalFatiguePercent(
   return { percent: delta, isAdjusted: true };
 }
 
-function roundToHalf(value: number): number {
-  return Math.round(value * 2) / 2;
+function getMinIncrement(unit: UnitSystem): number {
+  return unit === 'lbs' ? 5 : 2.5;
+}
+
+export function roundToLoadable(weight: number, unit: UnitSystem): number {
+  const barWeight = getBarWeight(unit);
+  if (weight <= barWeight) return barWeight;
+  const increment = getMinIncrement(unit);
+  const aboveBar = weight - barWeight;
+  const steps = Math.round(aboveBar / increment);
+  return barWeight + steps * increment;
 }
 
 export function getBarWeight(unit: UnitSystem): number {
@@ -204,9 +213,9 @@ export function calculatePlates(
 
   const targetWeight = (oneRepMax * targetPercent) / 100;
   const adjustedWeight = targetWeight * (1 - totalPenalty / 100);
-  const finalWeight = roundToHalf(adjustedWeight);
   const barWeight = getBarWeight(unit);
-  const clampedFinal = Math.max(barWeight, finalWeight);
+  const loadableWeight = roundToLoadable(adjustedWeight, unit);
+  const clampedFinal = Math.max(barWeight, loadableWeight);
   const weightPerSide = Math.max(0, (clampedFinal - barWeight) / 2);
 
   const plates: PlateBreakdown[] = [];
@@ -262,10 +271,14 @@ export function getPlateColor(weight: PlateWeight, unit: UnitSystem = 'lbs'): st
 
 export function convertWeight(value: number, from: UnitSystem, to: UnitSystem): number {
   if (from === to) return value;
+  let raw: number;
   if (to === 'lbs') {
-    return Math.round(value * 2.20462 * 10) / 10;
+    raw = value * 2.20462;
+  } else {
+    raw = value / 2.20462;
   }
-  return Math.round((value / 2.20462) * 10) / 10;
+  const increment = getMinIncrement(to);
+  return Math.round(raw / increment) * increment;
 }
 
 export function getPlateLabel(weight: PlateWeight): string {
