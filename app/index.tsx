@@ -101,8 +101,9 @@ function AnimatedWeightDisplay({ animValue }: { animValue: Animated.Value }) {
 
   useEffect(() => {
     const id = animValue.addListener(({ value }) => {
-      const weight = Math.round(100 - (value * 17));
-      setDisplayVal(String(weight));
+      const weight = 100 - (value * 17.5);
+      const rounded = Math.round(weight * 2) / 2;
+      setDisplayVal(rounded % 1 === 0 ? String(rounded) : rounded.toFixed(1));
     });
     return () => animValue.removeListener(id);
   }, [animValue]);
