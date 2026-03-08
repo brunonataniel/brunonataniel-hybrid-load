@@ -326,6 +326,18 @@ export default function LandingScreen() {
           </Animated.View>
         </Animated.View>
 
+        <View style={styles.midCtaSection}>
+          <TouchableOpacity
+            style={styles.ctaButton}
+            activeOpacity={0.85}
+            onPress={() => router.push('/(tabs)/calculator')}
+            testID="landing-mid-cta"
+          >
+            <Text style={styles.ctaText}>OPEN CALCULATOR</Text>
+            <ChevronRight size={18} color="#000000" />
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.valueSectionHeader}>
           <View style={styles.sectionLine} />
           <Text style={styles.sectionTitle}>THE DIFFERENCE</Text>
@@ -945,6 +957,10 @@ const styles = StyleSheet.create({
   ctaSection: {
     alignItems: 'center',
     marginBottom: 40,
+  },
+  midCtaSection: {
+    alignItems: 'center',
+    marginBottom: 32,
   },
   ctaButton: {
     flexDirection: 'row',
