@@ -29,68 +29,33 @@ export interface CalculationResult {
   barWeight: number;
 }
 
-const FATIGUE_REDUCTIONS: Record<FatigueType, number> = {
+const FATIGUE_BASE: Record<FatigueType, number> = {
   combat: 0.15,
   stairs: 0.10,
-  hiit: 0.20,
-  swim: 0.05,
+  hiit: 0.10,
+  swim: 0.10,
   running: 0.10,
 };
 
+const SYSTEMIC_PENALTY = 0.03;
+
 const MAX_FATIGUE_REDUCTION = 0.30;
 
-const SYSTEMIC_OVERLAY_FACTOR = 0.20;
-
-const LOCAL_FATIGUE_TYPES: FatigueType[] = ['running', 'stairs'];
-
-const UPPER_BODY_SCALING: Record<FatigueType, number> = {
-  combat: 0.60,
-  stairs: 0.30,
-  hiit: 0.30,
-  swim: 0.30,
-  running: 0.30,
-};
-
-function getLiftScaling(lift: LiftType, fatigueType: FatigueType): number {
-  if (lift === 'squat' || lift === 'deadlift') {
-    return 1.0;
-  }
-  return UPPER_BODY_SCALING[fatigueType] ?? 1.0;
+function getAnchorBase(activeFatigues: FatigueType[]): number {
+  if (activeFatigues.includes('combat')) return 0.15;
+  if (activeFatigues.length > 0) return 0.10;
+  return 0;
 }
 
-export function computeTotalReduction(activeFatigues: FatigueType[], lift: LiftType = 'squat'): number {
+export function computeTotalReduction(activeFatigues: FatigueType[], _lift: LiftType = 'squat'): number {
   if (activeFatigues.length === 0) return 0;
 
-  if (activeFatigues.length === 1) {
-    const base = FATIGUE_REDUCTIONS[activeFatigues[0]] ?? 0;
-    const scaling = getLiftScaling(lift, activeFatigues[0]);
-    return Math.min(base * scaling, MAX_FATIGUE_REDUCTION);
-  }
+  const anchorBase = getAnchorBase(activeFatigues);
+  const additionalCount = activeFatigues.length - 1;
+  const totalReduction = anchorBase + (additionalCount * SYSTEMIC_PENALTY);
 
-  const scaled = activeFatigues.map(f => ({
-    type: f,
-    reduction: (FATIGUE_REDUCTIONS[f] ?? 0) * getLiftScaling(lift, f),
-    isLocal: LOCAL_FATIGUE_TYPES.includes(f),
-  }));
+  console.log(`[HeavyCombatEngine] Anchor base: -${(anchorBase * 100).toFixed(0)}%, additional tags: ${additionalCount}, penalty: -${(additionalCount * SYSTEMIC_PENALTY * 100).toFixed(0)}%, total: -${(totalReduction * 100).toFixed(0)}%`);
 
-  scaled.sort((a, b) => {
-    if (a.isLocal !== b.isLocal) return a.isLocal ? -1 : 1;
-    return b.reduction - a.reduction;
-  });
-
-  let remainingCapacity = 1.0;
-
-  remainingCapacity *= (1 - scaled[0].reduction);
-  console.log(`[SystemicEngine] Primary: ${scaled[0].type} (-${(scaled[0].reduction * 100).toFixed(1)}%) → capacity: ${(remainingCapacity * 100).toFixed(1)}%`);
-
-  for (let i = 1; i < scaled.length; i++) {
-    const systemicRate = scaled[i].reduction * SYSTEMIC_OVERLAY_FACTOR;
-    remainingCapacity *= (1 - systemicRate);
-    console.log(`[SystemicEngine] Overlay: ${scaled[i].type} (${(scaled[i].reduction * 100).toFixed(1)}% × ${SYSTEMIC_OVERLAY_FACTOR} = -${(systemicRate * 100).toFixed(1)}%) → capacity: ${(remainingCapacity * 100).toFixed(1)}%`);
-  }
-
-  const totalReduction = 1 - remainingCapacity;
-  console.log(`[SystemicEngine] Total compounded reduction: -${(totalReduction * 100).toFixed(1)}%`);
   return Math.min(totalReduction, MAX_FATIGUE_REDUCTION);
 }
 
@@ -189,25 +154,22 @@ export function getPlateLabel(weight: PlateWeight): string {
 export const FATIGUE_OPTIONS: { type: FatigueType; label: string; reduction: string }[] = [
   { type: 'combat', label: 'Combat', reduction: '15%' },
   { type: 'stairs', label: 'Stairs', reduction: '10%' },
-  { type: 'hiit', label: 'HIIT', reduction: '20%' },
-  { type: 'swim', label: 'Swim', reduction: '5%' },
+  { type: 'hiit', label: 'HIIT', reduction: '10%' },
+  { type: 'swim', label: 'Swim', reduction: '10%' },
   { type: 'running', label: 'Run', reduction: '10%' },
 ];
 
-export function getScaledFatiguePercent(fatigueType: FatigueType, lift: LiftType): number {
-  const base = FATIGUE_REDUCTIONS[fatigueType] ?? 0;
-  const scaling = getLiftScaling(lift, fatigueType);
-  return Math.round(base * scaling * 100);
+export function getScaledFatiguePercent(fatigueType: FatigueType, _lift: LiftType): number {
+  return Math.round((FATIGUE_BASE[fatigueType] ?? 0) * 100);
 }
 
 export function getMarginalFatiguePercent(
   fatigueType: FatigueType,
-  lift: LiftType,
+  _lift: LiftType,
   activeFatigues: FatigueType[],
 ): { percent: number; isAdjusted: boolean } {
-  const base = FATIGUE_REDUCTIONS[fatigueType] ?? 0;
-  const scaling = getLiftScaling(lift, fatigueType);
-  const fullPercent = Math.round(base * scaling * 100);
+  const fullPercent = Math.round((FATIGUE_BASE[fatigueType] ?? 0) * 100);
+  const penaltyPercent = Math.round(SYSTEMIC_PENALTY * 100);
 
   if (activeFatigues.length === 0) {
     return { percent: fullPercent, isAdjusted: false };
@@ -216,23 +178,41 @@ export function getMarginalFatiguePercent(
   const isActive = activeFatigues.includes(fatigueType);
 
   if (isActive) {
-    const without = activeFatigues.filter(f => f !== fatigueType);
-    if (without.length === 0) {
+    if (activeFatigues.length === 1) {
       return { percent: fullPercent, isAdjusted: false };
     }
-    const totalWith = computeTotalReduction(activeFatigues, lift);
-    const totalWithout = computeTotalReduction(without, lift);
-    const marginal = Math.round((totalWith - totalWithout) * 100);
-    const isAdj = marginal !== fullPercent;
-    console.log(`[MarginalPreview] Active ${fatigueType}: marginal=${marginal}%, base=${fullPercent}%, adjusted=${isAdj}`);
-    return { percent: marginal, isAdjusted: isAdj };
+
+    const isAnchor = isTagTheAnchor(fatigueType, activeFatigues);
+    if (isAnchor) {
+      const anchorBase = getAnchorBase(activeFatigues);
+      const anchorPercent = Math.round(anchorBase * 100);
+      console.log(`[MarginalPreview] Active anchor ${fatigueType}: ${anchorPercent}%`);
+      return { percent: anchorPercent, isAdjusted: false };
+    }
+
+    console.log(`[MarginalPreview] Active non-anchor ${fatigueType}: ${penaltyPercent}% ADJ`);
+    return { percent: penaltyPercent, isAdjusted: true };
   }
 
-  const hypothetical = [...activeFatigues, fatigueType];
-  const totalWith = computeTotalReduction(hypothetical, lift);
-  const totalWithout = computeTotalReduction(activeFatigues, lift);
-  const marginal = Math.round((totalWith - totalWithout) * 100);
-  const isAdj = marginal !== fullPercent;
-  console.log(`[MarginalPreview] Inactive ${fatigueType}: marginal=${marginal}%, base=${fullPercent}%, adjusted=${isAdj}`);
-  return { percent: marginal, isAdjusted: isAdj };
+  const wouldBeAnchor = isTagTheAnchor(fatigueType, [...activeFatigues, fatigueType]);
+  if (wouldBeAnchor) {
+    const newAnchorBase = getAnchorBase([...activeFatigues, fatigueType]);
+    const currentAnchorBase = getAnchorBase(activeFatigues);
+    if (newAnchorBase > currentAnchorBase) {
+      const upgradeContribution = Math.round((newAnchorBase - currentAnchorBase + SYSTEMIC_PENALTY) * 100);
+      console.log(`[MarginalPreview] Inactive would-be-anchor ${fatigueType}: ${upgradeContribution}% (anchor upgrade)`);
+      return { percent: upgradeContribution, isAdjusted: upgradeContribution !== fullPercent };
+    }
+    return { percent: fullPercent, isAdjusted: false };
+  }
+
+  console.log(`[MarginalPreview] Inactive non-anchor ${fatigueType}: ${penaltyPercent}% ADJ`);
+  return { percent: penaltyPercent, isAdjusted: true };
+}
+
+function isTagTheAnchor(fatigueType: FatigueType, fatigues: FatigueType[]): boolean {
+  if (fatigues.includes('combat')) {
+    return fatigueType === 'combat';
+  }
+  return fatigues[0] === fatigueType || fatigues.indexOf(fatigueType) === 0;
 }
