@@ -247,11 +247,6 @@ export default function LandingScreen() {
             </View>
           </View>
 
-          <View style={styles.warningStrip}>
-            <View style={styles.warningDot} />
-            <Text style={styles.warningLabel}>SYSTEM ADVISORY</Text>
-          </View>
-
           <Text style={styles.heroHeadline}>
             STOP LIFTING{' '}ON{' '}<Text style={styles.heroAccent}>STATIC{' '}PERCENTAGES.</Text>
           </Text>
