@@ -13,8 +13,27 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Swords, Zap, Activity, Waves, Footprints, ChevronRight, Shield, Building2, Mail } from 'lucide-react-native';
+import { Swords, Zap, Activity, Waves, Footprints, ChevronRight, Shield, Building2, Mail, Brain, Target, ShieldCheck } from 'lucide-react-native';
+import { useWindowDimensions } from 'react-native';
 import { Colors } from '@/constants/colors';
+
+const VALUE_PROPS = [
+  {
+    icon: Brain,
+    title: 'CNS-AWARE SENSING',
+    description: "Standard calculators are 'dumb.' Hybrid Load adjusts your weights based on the Central Nervous System (CNS) fatigue from Combat Sports, HIIT, and Endurance.",
+  },
+  {
+    icon: Target,
+    title: 'DYNAMIC INTENSITY',
+    description: "Your 80% today isn't your 80% from yesterday. The engine calculates the 'Relative Load' that matches your body's current recovery state.",
+  },
+  {
+    icon: ShieldCheck,
+    title: 'INJURY PREVENTION',
+    description: "Stop ego-lifting when you're red-lining. The engine acts as a digital safety switch, ensuring you train at the highest possible intensity without overtraining.",
+  },
+];
 
 const FEATURES = [
   {
@@ -61,7 +80,11 @@ export default function LandingScreen() {
   const [email, setEmail] = useState<string>('');
   const [submitState, setSubmitState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
+  const { width: windowWidth } = useWindowDimensions();
+  const isWideScreen = windowWidth >= 560;
+
   const heroAnim = useRef(new Animated.Value(0)).current;
+  const valueAnims = useRef(VALUE_PROPS.map(() => new Animated.Value(0))).current;
   const featureAnims = useRef(FEATURES.map(() => new Animated.Value(0))).current;
   const ctaAnim = useRef(new Animated.Value(0)).current;
 
@@ -71,6 +94,15 @@ export default function LandingScreen() {
       duration: 800,
       useNativeDriver: true,
     }).start();
+
+    VALUE_PROPS.forEach((_, i) => {
+      Animated.timing(valueAnims[i], {
+        toValue: 1,
+        duration: 500,
+        delay: 300 + i * 100,
+        useNativeDriver: true,
+      }).start();
+    });
 
     FEATURES.forEach((_, i) => {
       Animated.timing(featureAnims[i], {
@@ -87,7 +119,7 @@ export default function LandingScreen() {
       delay: 1000,
       useNativeDriver: true,
     }).start();
-  }, [heroAnim, featureAnims, ctaAnim]);
+  }, [heroAnim, valueAnims, featureAnims, ctaAnim]);
 
   const handleClaim = useCallback(async () => {
     if (!email.trim() || submitState === 'loading') return;
@@ -174,6 +206,44 @@ export default function LandingScreen() {
             </View>
           </View>
         </Animated.View>
+
+        <View style={styles.valueSectionHeader}>
+          <View style={styles.sectionLine} />
+          <Text style={styles.sectionTitle}>WHY HYBRID LOAD?</Text>
+          <View style={styles.sectionLine} />
+        </View>
+
+        <View style={[styles.valueGrid, isWideScreen && styles.valueGridWide]}>
+          {VALUE_PROPS.map((prop, index) => {
+            const Icon = prop.icon;
+            return (
+              <Animated.View
+                key={prop.title}
+                style={[
+                  styles.valueCard,
+                  isWideScreen && styles.valueCardWide,
+                  {
+                    opacity: valueAnims[index],
+                    transform: [
+                      {
+                        translateY: valueAnims[index].interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [20, 0],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
+                <View style={styles.valueIconWrap}>
+                  <Icon size={22} color={Colors.accent} />
+                </View>
+                <Text style={styles.valueTitle}>{prop.title}</Text>
+                <Text style={styles.valueDesc}>{prop.description}</Text>
+              </Animated.View>
+            );
+          })}
+        </View>
 
         <View style={styles.sectionHeader}>
           <View style={styles.sectionLine} />
@@ -417,6 +487,53 @@ const styles = StyleSheet.create({
     width: 1,
     height: 36,
     backgroundColor: Colors.border,
+  },
+  valueSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    gap: 12,
+  },
+  valueGrid: {
+    gap: 12,
+    marginBottom: 40,
+  },
+  valueGridWide: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  valueCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: 14,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#27272a',
+    borderTopWidth: 2,
+    borderTopColor: 'rgba(204, 255, 0, 0.25)',
+  },
+  valueCardWide: {
+    flex: 1,
+  },
+  valueIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: Colors.accentDim,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 14,
+  },
+  valueTitle: {
+    fontSize: 13,
+    fontWeight: '800' as const,
+    color: Colors.accent,
+    letterSpacing: 1.2,
+    marginBottom: 8,
+  },
+  valueDesc: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    lineHeight: 19,
   },
   sectionHeader: {
     flexDirection: 'row',
