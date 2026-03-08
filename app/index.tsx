@@ -322,7 +322,7 @@ export default function LandingScreen() {
           <View style={styles.inputRow}>
             <TextInput
               style={styles.emailInput}
-              placeholder="deine@email.de"
+              placeholder="Email address / E-Mail-Adresse"
               placeholderTextColor={Colors.textTertiary}
               value={email}
               onChangeText={(text) => {
@@ -359,18 +359,25 @@ export default function LandingScreen() {
             <Text style={styles.successMessage}>Erfolgreich eingetragen!</Text>
           )}
           {submitState === 'error' && (
-            <Text style={styles.errorMessage}>Fehler. Bitte versuche es später erneut.</Text>
+            <Text style={styles.errorMessage}>Please enter a valid email / Bitte gib eine gültige E-Mail-Adresse ein.</Text>
           )}
 
           <Text style={styles.consentText}>
-            Durch Klick auf den Button stimmst du unserer{' '}
+            By clicking 'Claim', you agree to our{' '}
+            <Text
+              style={styles.consentLink}
+              onPress={() => router.push('/privacy')}
+            >
+              Privacy Policy (EN/DE)
+            </Text>
+            . / Mit Klick auf 'Claim' stimmst du unserer{' '}
             <Text
               style={styles.consentLink}
               onPress={() => router.push('/privacy')}
             >
               Datenschutzerklärung
-            </Text>{' '}
-            zu.
+            </Text>
+            {' '}zu.
           </Text>
         </View>
 
