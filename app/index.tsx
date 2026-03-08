@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Swords, Zap, Activity, Waves, Footprints, ChevronRight, Shield, Building2, Mail, Brain, RefreshCw, ShieldCheck, BarChart3, Gauge, ShieldHalf, Dumbbell } from 'lucide-react-native';
+import { Swords, Zap, Activity, Waves, Footprints, ChevronRight, Shield, Building2, Mail, BarChart3, Gauge, ShieldHalf, Dumbbell, Crosshair, Target, Users } from 'lucide-react-native';
 import { useWindowDimensions } from 'react-native';
 import { Colors } from '@/constants/colors';
 
@@ -42,19 +42,19 @@ const ROADMAP_FEATURES = [
 
 const VALUE_PROPS = [
   {
-    icon: Brain,
-    title: 'LOCAL VS. SYSTEMIC LOGIC',
-    description: "We don't punish your Bench for your Run. HybridLoad separates CNS drain from local muscular fatigue — so upper body lifts only feel what actually affects them.",
+    icon: Crosshair,
+    title: 'NEURAL DRIVE SCALING',
+    description: 'Most apps treat you like a battery. We treat you like a nervous system.',
   },
   {
-    icon: RefreshCw,
-    title: 'INSTANT RECALIBRATION',
-    description: 'Switch between Squat, Bench, Deadlift, and OHP — watch your suggested load update in real-time as the engine rescales fatigue to your specific lift.',
+    icon: Target,
+    title: 'LOCALIZED BIOMECHANICS',
+    description: 'Stop stripping weight from the wrong lifts. Our engine knows where your fatigue is hiding.',
   },
   {
-    icon: ShieldCheck,
-    title: 'PERFORMANCE OPTIMIZATION',
-    description: 'Maximize every session by training at the correct intensity. The engine acts as a digital coach, ensuring you push your limits without hitting a wall.',
+    icon: Users,
+    title: 'GENESIS 50 ACCESS',
+    description: "The first 50 testers aren't just users. They are the architects. 48 spots remain.",
   },
 ];
 
@@ -96,6 +96,20 @@ const FEATURES = [
   },
 ];
 
+function AnimatedWeightDisplay({ animValue }: { animValue: Animated.Value }) {
+  const [displayVal, setDisplayVal] = useState<string>('100');
+
+  useEffect(() => {
+    const id = animValue.addListener(({ value }) => {
+      const weight = Math.round(100 - (value * 13));
+      setDisplayVal(String(weight));
+    });
+    return () => animValue.removeListener(id);
+  }, [animValue]);
+
+  return <Text style={compStyles.hybridWeightText}>{displayVal}</Text>;
+}
+
 export default function LandingScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -107,6 +121,8 @@ export default function LandingScreen() {
   const isWideScreen = windowWidth >= 560;
 
   const heroAnim = useRef(new Animated.Value(0)).current;
+  const comparisonAnim = useRef(new Animated.Value(0)).current;
+  const shiftAnim = useRef(new Animated.Value(0)).current;
   const valueAnims = useRef(VALUE_PROPS.map(() => new Animated.Value(0))).current;
   const featureAnims = useRef(FEATURES.map(() => new Animated.Value(0))).current;
   const ctaAnim = useRef(new Animated.Value(0)).current;
@@ -118,11 +134,35 @@ export default function LandingScreen() {
       useNativeDriver: true,
     }).start();
 
+    Animated.timing(comparisonAnim, {
+      toValue: 1,
+      duration: 600,
+      delay: 500,
+      useNativeDriver: true,
+    }).start();
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(shiftAnim, {
+          toValue: 1,
+          duration: 1800,
+          delay: 1200,
+          useNativeDriver: false,
+        }),
+        Animated.timing(shiftAnim, {
+          toValue: 0,
+          duration: 1800,
+          delay: 800,
+          useNativeDriver: false,
+        }),
+      ])
+    ).start();
+
     VALUE_PROPS.forEach((_, i) => {
       Animated.timing(valueAnims[i], {
         toValue: 1,
         duration: 500,
-        delay: 300 + i * 100,
+        delay: 600 + i * 150,
         useNativeDriver: true,
       }).start();
     });
@@ -142,7 +182,12 @@ export default function LandingScreen() {
       delay: 1000,
       useNativeDriver: true,
     }).start();
-  }, [heroAnim, valueAnims, featureAnims, ctaAnim]);
+  }, [heroAnim, comparisonAnim, shiftAnim, valueAnims, featureAnims, ctaAnim]);
+
+  const tagOpacity = shiftAnim.interpolate({
+    inputRange: [0, 0.3, 1],
+    outputRange: [0, 1, 1],
+  });
 
   const handleClaim = useCallback(async () => {
     if (!email.trim() || submitState === 'loading') return;
@@ -203,34 +248,68 @@ export default function LandingScreen() {
           </View>
 
           <Text style={styles.heroHeadline}>
-            THE FATIGUE{'\n'}ENGINE BUILT{'\n'}FOR <Text style={styles.heroAccent}>SPECIFICITY.</Text>
+            YOUR 1-REP{'\n'}MAX IS{'\n'}A <Text style={styles.heroAccent}>LIE.</Text>
           </Text>
 
           <Text style={styles.heroSubtext}>
-            Stop guessing your recovery. HybridLoad scales fatigue based on your specific lift — separating CNS drain from local muscular fatigue. High-performance math for the hybrid athlete.
+            Every calculator gives you a number. None of them know what you did yesterday. HybridLoad is the first engine that scales your training load to your actual nervous system state.
           </Text>
 
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>5</Text>
-              <Text style={styles.statLabel}>FATIGUE{'\n'}INPUTS</Text>
+          <Animated.View style={[
+            styles.comparisonCard,
+            {
+              opacity: comparisonAnim,
+              transform: [{ translateY: comparisonAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }],
+            },
+          ]}>
+            <View style={styles.comparisonRow}>
+              <View style={styles.comparisonSide}>
+                <View style={styles.comparisonLabelBadge}>
+                  <Text style={styles.comparisonLabel}>STANDARD APP</Text>
+                </View>
+                <View style={styles.comparisonWeightBox}>
+                  <Text style={styles.comparisonWeightStatic}>100</Text>
+                  <Text style={styles.comparisonUnitStatic}>KG</Text>
+                </View>
+                <Text style={styles.comparisonNote}>Same number.{'\n'}Every day.</Text>
+              </View>
+
+              <View style={styles.comparisonDivider}>
+                <View style={styles.vsCircle}>
+                  <Text style={styles.comparisonVs}>VS</Text>
+                </View>
+              </View>
+
+              <View style={styles.comparisonSideHL}>
+                <View style={styles.comparisonLabelBadgeHL}>
+                  <Text style={styles.comparisonLabelHL}>HYBRIDLOAD</Text>
+                </View>
+                <View style={styles.comparisonWeightBoxHL}>
+                  <AnimatedWeightDisplay animValue={shiftAnim} />
+                  <Text style={styles.comparisonUnitHL}>KG</Text>
+                </View>
+                <Animated.View style={[styles.fatigueTagRow, { opacity: tagOpacity }]}>
+                  <View style={styles.fatigueTag}>
+                    <Swords size={10} color={Colors.accent} />
+                    <Text style={styles.fatigueTagText}>COMBAT</Text>
+                  </View>
+                  <View style={styles.fatigueTag}>
+                    <Activity size={10} color={Colors.accent} />
+                    <Text style={styles.fatigueTagText}>RUN</Text>
+                  </View>
+                </Animated.View>
+              </View>
             </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>45%</Text>
-              <Text style={styles.statLabel}>MAX{'\n'}IMPACT</Text>
+            <View style={styles.comparisonFooter}>
+              <View style={styles.comparisonFooterDot} />
+              <Text style={styles.comparisonFooterText}>Real-time fatigue scaling in action</Text>
             </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>∞</Text>
-              <Text style={styles.statLabel}>CNS{'\n'}DIAGNOSTIC</Text>
-            </View>
-          </View>
+          </Animated.View>
         </Animated.View>
 
         <View style={styles.valueSectionHeader}>
           <View style={styles.sectionLine} />
-          <Text style={styles.sectionTitle}>WHY HYBRID LOAD?</Text>
+          <Text style={styles.sectionTitle}>THE DIFFERENCE</Text>
           <View style={styles.sectionLine} />
         </View>
 
@@ -468,6 +547,15 @@ export default function LandingScreen() {
   );
 }
 
+const compStyles = StyleSheet.create({
+  hybridWeightText: {
+    fontSize: 36,
+    fontWeight: '900' as const,
+    color: Colors.accent,
+    letterSpacing: -1,
+  },
+});
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -527,37 +615,159 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: 32,
   },
-  statsRow: {
-    flexDirection: 'row',
+  comparisonCard: {
     backgroundColor: Colors.surface,
-    borderRadius: 16,
+    borderRadius: 18,
     padding: 20,
-    alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.04)',
+    borderColor: 'rgba(255,255,255,0.06)',
+    overflow: 'hidden',
   },
-  statItem: {
+  comparisonRow: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+  },
+  comparisonSide: {
     flex: 1,
     alignItems: 'center',
+    paddingVertical: 8,
   },
-  statNumber: {
-    fontSize: 28,
+  comparisonSideHL: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  comparisonLabelBadge: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    marginBottom: 14,
+  },
+  comparisonLabel: {
+    fontSize: 9,
+    fontWeight: '700' as const,
+    color: Colors.textTertiary,
+    letterSpacing: 1.2,
+    textAlign: 'center' as const,
+  },
+  comparisonLabelBadgeHL: {
+    backgroundColor: 'rgba(204, 255, 0, 0.1)',
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(204, 255, 0, 0.2)',
+  },
+  comparisonLabelHL: {
+    fontSize: 9,
     fontWeight: '800' as const,
     color: Colors.accent,
-    marginBottom: 4,
+    letterSpacing: 1.2,
+    textAlign: 'center' as const,
   },
-  statLabel: {
+  comparisonWeightBox: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: 10,
+    gap: 4,
+  },
+  comparisonWeightStatic: {
+    fontSize: 36,
+    fontWeight: '900' as const,
+    color: '#4A4A4E',
+    letterSpacing: -1,
+  },
+  comparisonUnitStatic: {
+    fontSize: 14,
+    fontWeight: '700' as const,
+    color: '#3A3A3E',
+    letterSpacing: 1,
+  },
+  comparisonWeightBoxHL: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: 10,
+    gap: 4,
+  },
+  comparisonUnitHL: {
+    fontSize: 14,
+    fontWeight: '700' as const,
+    color: 'rgba(204, 255, 0, 0.6)',
+    letterSpacing: 1,
+  },
+  comparisonNote: {
     fontSize: 10,
-    fontWeight: '600' as const,
+    color: '#4A4A4E',
+    textAlign: 'center' as const,
+    lineHeight: 14,
+    fontWeight: '500' as const,
+  },
+  comparisonDivider: {
+    width: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  vsCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  comparisonVs: {
+    fontSize: 9,
+    fontWeight: '800' as const,
     color: Colors.textTertiary,
     letterSpacing: 1,
-    textAlign: 'center',
-    lineHeight: 14,
   },
-  statDivider: {
-    width: 1,
-    height: 36,
-    backgroundColor: Colors.border,
+  fatigueTagRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginTop: 2,
+  },
+  fatigueTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: 'rgba(204, 255, 0, 0.08)',
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(204, 255, 0, 0.15)',
+  },
+  fatigueTagText: {
+    fontSize: 8,
+    fontWeight: '800' as const,
+    color: Colors.accent,
+    letterSpacing: 0.8,
+  },
+  comparisonFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.04)',
+    gap: 6,
+  },
+  comparisonFooterDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: Colors.accent,
+  },
+  comparisonFooterText: {
+    fontSize: 10,
+    color: Colors.textTertiary,
+    fontWeight: '600' as const,
+    letterSpacing: 0.5,
   },
   valueSectionHeader: {
     flexDirection: 'row',
@@ -715,23 +925,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 12,
     color: Colors.textTertiary,
-  },
-  betaBadge: {
-    marginTop: 14,
-    backgroundColor: 'rgba(204, 255, 0, 0.06)',
-    borderWidth: 1,
-    borderColor: 'rgba(204, 255, 0, 0.12)',
-    borderRadius: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  betaBadgeText: {
-    fontSize: 11,
-    color: Colors.textTertiary,
-    textAlign: 'center' as const,
-    fontWeight: '500' as const,
-    letterSpacing: 0.3,
-    lineHeight: 16,
   },
   waitlistSection: {
     marginBottom: 40,
@@ -912,24 +1105,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: Colors.textSecondary,
     lineHeight: 19,
-  },
-  roadmapCta: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    backgroundColor: Colors.accent,
-    borderRadius: 14,
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    width: '100%' as const,
-    gap: 8,
-    marginTop: 14,
-  },
-  roadmapCtaText: {
-    fontSize: 14,
-    fontWeight: '800' as const,
-    color: '#000000',
-    letterSpacing: 1.5,
   },
   disclaimerTextEn: {
     fontSize: 10,
