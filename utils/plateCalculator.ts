@@ -160,22 +160,25 @@ export function getMarginalFatiguePercent(
     return { percent: baseValue, isAdjusted: false };
   }
 
-  const anchor = findAnchor(activeFatigues, lift)!;
-  const anchorCNS = CNS_PROFILE[anchor];
   const isActive = activeFatigues.includes(fatigueType);
 
   if (isActive) {
+    const anchor = findAnchor(activeFatigues, lift)!;
     if (fatigueType === anchor) {
       return { percent: BASE_VALUES[category][anchor], isAdjusted: false };
     }
+    const anchorCNS = CNS_PROFILE[anchor];
     const mod = getEffectiveModifier(fatigueType, anchorCNS);
     console.log(`[MarginalPreview] Active non-anchor ${fatigueType}: -${mod}% ADJ (anchor=${anchor}, CNS=${anchorCNS})`);
     return { percent: mod, isAdjusted: true };
   }
 
-  const mod = getEffectiveModifier(fatigueType, anchorCNS);
-  console.log(`[MarginalPreview] Inactive ${fatigueType}: -${mod}% ADJ (anchor=${anchor}, CNS=${anchorCNS})`);
-  return { percent: mod, isAdjusted: true };
+  const currentPenalty = computeBreakdown(activeFatigues, lift).totalPenalty;
+  const hypothetical = [...activeFatigues, fatigueType];
+  const newPenalty = computeBreakdown(hypothetical, lift).totalPenalty;
+  const delta = newPenalty - currentPenalty;
+  console.log(`[MarginalPreview] Inactive ${fatigueType}: delta -${delta}% (current=${currentPenalty}%, hypothetical=${newPenalty}%)`);
+  return { percent: delta, isAdjusted: true };
 }
 
 function roundToHalf(value: number): number {
