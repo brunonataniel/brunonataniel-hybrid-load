@@ -473,14 +473,17 @@ export default function LandingScreen() {
         <View style={styles.waitlistSection}>
           <View style={styles.waitlistHeader}>
             <View style={styles.waitlistLine} />
-            <Text style={styles.waitlistLabel}>BETA WAITLIST</Text>
+            <Text style={styles.waitlistLabel}>STAY IN THE LOOP</Text>
             <View style={styles.waitlistLine} />
           </View>
+
+          <Text style={styles.waitlistDesc}>Get notified when Pro features like the Performance Archive, RPE Precision, and Volume Optimization go live.</Text>
+          <Text style={styles.waitlistDescDe}>Erfahre als Erstes, wenn Pro-Features wie das Performance-Archiv, RPE-Präzision und Volumen-Optimierung verfügbar sind.</Text>
 
           <View style={styles.inputRow}>
             <TextInput
               style={styles.emailInput}
-              placeholder="Email address"
+              placeholder="your@email.com"
               placeholderTextColor={Colors.textTertiary}
               value={email}
               onChangeText={(text) => {
@@ -508,7 +511,7 @@ export default function LandingScreen() {
               {submitState === 'loading' ? (
                 <ActivityIndicator size="small" color="#000000" />
               ) : (
-                <Text style={styles.claimButtonText}>CLAIM</Text>
+                <Text style={styles.claimButtonText}>SUBSCRIBE</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -521,14 +524,14 @@ export default function LandingScreen() {
           )}
 
           <Text style={styles.consentText}>
-            By clicking 'Claim', you agree to our{' '}
+            By clicking 'Subscribe', you agree to our{' '}
             <Text
               style={styles.consentLink}
               onPress={() => router.push('/privacy')}
             >
               Privacy Policy (EN/DE)
             </Text>
-            . / Mit Klick auf 'Claim' stimmst du unserer{' '}
+            . / Mit Klick auf 'Subscribe' stimmst du unserer{' '}
             <Text
               style={styles.consentLink}
               onPress={() => router.push('/privacy')}
@@ -1003,6 +1006,18 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
     color: Colors.textTertiary,
     letterSpacing: 1.1,
+  },
+  waitlistDesc: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    lineHeight: 19,
+    marginBottom: 4,
+  },
+  waitlistDescDe: {
+    fontSize: 13,
+    color: Colors.textTertiary,
+    lineHeight: 19,
+    marginBottom: 16,
   },
   inputRow: {
     gap: 10,
