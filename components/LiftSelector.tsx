@@ -85,7 +85,7 @@ export default React.memo(function LiftSelector({ value, onChange }: LiftSelecto
         <Text style={styles.title}>EXERCISE SELECT</Text>
         <View style={styles.scalingHint}>
           <Text style={styles.scalingHintText}>
-            {value === 'squat' || value === 'deadlift' ? '100% FATIGUE LOAD' : 'SYSTEMIC SCALING'}
+            SYSTEMIC SCALING
           </Text>
         </View>
       </View>

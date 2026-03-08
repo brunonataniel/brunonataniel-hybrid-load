@@ -53,8 +53,8 @@ const VALUE_PROPS = [
   },
   {
     icon: ShieldCheck,
-    title: 'THE PERFORMANCE SHIELD',
-    description: 'Protect your progress. Bridge the gap between static percentages and the reality of a hybrid training schedule.',
+    title: 'OVERTRAINING PROTECTION',
+    description: 'The engine caps fatigue penalties with diminishing returns. More stress doesn\'t mean more punishment — it means smarter math that keeps you training instead of sitting out.',
   },
 ];
 
@@ -63,35 +63,40 @@ const FEATURES = [
     icon: Zap,
     title: 'HIIT',
     subtitle: 'Sprints',
-    reductionRange: '-6% to -20%',
+    lowerRange: '-5% to -10%',
+    upperRange: '-6% to -10%',
     description: 'Accounts for CNS fatigue from high-intensity work',
   },
   {
     icon: Swords,
     title: 'COMBAT',
     subtitle: 'BJJ / MMA / Full-Body Contact',
-    reductionRange: '-9% to -15%',
+    lowerRange: '-4% to -15%',
+    upperRange: '-5% to -15%',
     description: 'Auto-adjusts load after grappling sessions',
   },
   {
     icon: Activity,
     title: 'RUNNING',
     subtitle: 'Endurance / Zone 2',
-    reductionRange: '-3% to -10%',
+    lowerRange: '-2% to -10%',
+    upperRange: '-2% to -3%',
     description: 'Factors in lower body fatigue from distance runs',
   },
   {
     icon: Footprints,
     title: 'STAIRS',
     subtitle: 'Stairmaster',
-    reductionRange: '-3% to -10%',
+    lowerRange: '-1% to -5%',
+    upperRange: '-1% to -3%',
     description: 'Compensates for quad and glute pre-fatigue',
   },
   {
     icon: Waves,
     title: 'SWIM',
     subtitle: 'Laps',
-    reductionRange: '-3% to -10%',
+    lowerRange: '-1% to -5%',
+    upperRange: '-2% to -10%',
     description: 'Minimal impact on lifting — smart micro-adjustment',
   },
 ];
@@ -101,7 +106,7 @@ function AnimatedWeightDisplay({ animValue }: { animValue: Animated.Value }) {
 
   useEffect(() => {
     const id = animValue.addListener(({ value }) => {
-      const weight = Math.round(100 - (value * 13));
+      const weight = Math.round(100 - (value * 17));
       setDisplayVal(String(weight));
     });
     return () => animValue.removeListener(id);
@@ -376,8 +381,15 @@ export default function LandingScreen() {
                   <View style={styles.featureIconWrap}>
                     <Icon size={20} color={Colors.accent} />
                   </View>
-                  <View style={styles.reductionBadge}>
-                    <Text style={styles.reductionText}>{feature.reductionRange}</Text>
+                  <View style={styles.reductionBadgeStack}>
+                    <View style={styles.reductionBadge}>
+                      <Text style={styles.reductionCategoryLabel}>LOWER</Text>
+                      <Text style={styles.reductionText}>{feature.lowerRange}</Text>
+                    </View>
+                    <View style={styles.reductionBadge}>
+                      <Text style={styles.reductionCategoryLabel}>UPPER</Text>
+                      <Text style={styles.reductionText}>{feature.upperRange}</Text>
+                    </View>
                   </View>
                 </View>
                 <Text style={styles.featureTitle}>{feature.title}</Text>
@@ -894,17 +906,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  reductionBadgeStack: {
+    gap: 4,
+    alignItems: 'flex-end' as const,
+  },
   reductionBadge: {
     backgroundColor: '#CCFF00',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 5,
+  },
+  reductionCategoryLabel: {
+    color: 'rgba(0,0,0,0.45)',
+    fontSize: 8,
+    fontWeight: '800' as const,
+    letterSpacing: 0.8,
   },
   reductionText: {
     color: '#000000',
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '900' as const,
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
   },
   featureTitle: {
     fontSize: 18,
