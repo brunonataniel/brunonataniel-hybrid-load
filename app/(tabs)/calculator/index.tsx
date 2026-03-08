@@ -388,7 +388,9 @@ export default function CalculatorScreen() {
                   selectionColor={Colors.accent}
                   maxLength={4}
                 />
-                <Text style={styles.inputUnit}>{unit === 'lbs' ? 'LBS' : 'KG'}</Text>
+                <View style={styles.inputUnitWrap}>
+                  <Text style={styles.inputUnit}>{unit === 'lbs' ? 'LBS' : 'KG'}</Text>
+                </View>
               </View>
             </View>
 
@@ -662,18 +664,20 @@ const styles = StyleSheet.create({
     paddingRight: 50,
     ...(Platform.OS === 'web' ? { outlineStyle: 'none' as any } : {}),
   },
-  inputUnit: {
+  inputUnitWrap: {
     position: 'absolute' as const,
     right: 18,
     top: 0,
     bottom: 0,
-    lineHeight: 52,
-    textAlignVertical: 'center' as const,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    zIndex: 2,
+  },
+  inputUnit: {
     fontSize: 14,
     fontWeight: '600' as const,
     color: Colors.textSecondary,
     letterSpacing: 1.2,
-    zIndex: 2,
   },
   percentSection: {
     gap: 10,
