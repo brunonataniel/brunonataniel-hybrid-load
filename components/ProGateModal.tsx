@@ -224,7 +224,7 @@ export default React.memo(function ProGateModal({ visible, onClose, onUnlock }: 
                 </View>
 
                 <Text style={styles.headline}>
-                  {isSoldOut ? 'ALL PASSES\nCLAIMED' : 'UNLOCK MULTI-ENGINE\nLOGIC'}
+                  {isSoldOut ? 'ALL PASSES\nCLAIMED' : 'GET LIFETIME\nPRO ACCESS'}
                 </Text>
 
                 <Text style={styles.subtext}>
@@ -232,7 +232,7 @@ export default React.memo(function ProGateModal({ visible, onClose, onUnlock }: 
                     ? 'All 50 Lifetime Pro passes have been claimed. Join the waitlist to be notified when new spots open up.'
                     : (
                       <>
-                        Stacking multiple fatigue sources (e.g., Combat + HIIT) is a Pro feature. During our Beta Phase, we are granting{' '}
+                        Unlock the full power of HybridLoad. Pro includes Multi-Engine stacking, the Performance Archive, RPE-based precision, and Volume Optimization. During our Beta, we are granting{' '}
                         <Text style={styles.subtextHighlight}>Lifetime Pro Access</Text> to the first 50 testers who provide feedback.
                       </>
                     )
@@ -318,7 +318,7 @@ export default React.memo(function ProGateModal({ visible, onClose, onUnlock }: 
                 <Text style={styles.successHeadline}>ACCESS GRANTED</Text>
                 <Text style={styles.successSub}>Welcome to the Founder's Circle.</Text>
                 <View style={styles.successBadge}>
-                  <Text style={styles.successBadgeText}>MULTI-ENGINE UNLOCKED</Text>
+                  <Text style={styles.successBadgeText}>LIFETIME PRO UNLOCKED</Text>
                 </View>
               </Animated.View>
             )}
