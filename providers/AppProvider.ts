@@ -14,6 +14,7 @@ export interface HistoryEntry {
   unit: UnitSystem;
   finalWeight: number;
   timestamp: number;
+  liftType?: LiftType;
 }
 
 const STORAGE_KEYS = {

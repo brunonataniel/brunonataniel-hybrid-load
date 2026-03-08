@@ -10,10 +10,10 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
-import { Clock, Trash2, Swords, Footprints, Zap, Waves, PersonStanding } from 'lucide-react-native';
+import { Clock, Trash2, Swords, Footprints, Zap, Waves, PersonStanding, Dumbbell, ArrowDown, ArrowUp, Crown } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { useApp, HistoryEntry } from '@/providers/AppProvider';
-import { FatigueType, UnitSystem, convertWeight, getFatigueReductionPercent } from '@/utils/plateCalculator';
+import { FatigueType, UnitSystem, LiftType, convertWeight, getFatigueReductionPercent } from '@/utils/plateCalculator';
 
 const FATIGUE_META: Record<FatigueType, { label: string; icon: typeof Zap; color: string }> = {
   combat: { label: 'Combat', icon: Swords, color: '#FF453A' },
@@ -21,6 +21,13 @@ const FATIGUE_META: Record<FatigueType, { label: string; icon: typeof Zap; color
   hiit: { label: 'HIIT', icon: Zap, color: '#BF5AF2' },
   swim: { label: 'Swim', icon: Waves, color: '#64D2FF' },
   running: { label: 'Run', icon: PersonStanding, color: '#30D158' },
+};
+
+const LIFT_META: Record<LiftType, { label: string; shortLabel: string; icon: typeof Dumbbell; color: string }> = {
+  squat: { label: 'Squat', shortLabel: 'SQT', icon: ArrowDown, color: Colors.accent },
+  bench: { label: 'Bench', shortLabel: 'BNC', icon: Dumbbell, color: '#64D2FF' },
+  deadlift: { label: 'Deadlift', shortLabel: 'DL', icon: ArrowUp, color: '#FF9F0A' },
+  overhead: { label: 'OHP', shortLabel: 'OHP', icon: Crown, color: '#BF5AF2' },
 };
 
 function formatDate(timestamp: number): string {
@@ -80,6 +87,18 @@ function FatigueIcons({ types }: { types: FatigueType[] }) {
   );
 }
 
+function LiftBadge({ liftType }: { liftType?: LiftType }) {
+  const meta = liftType ? LIFT_META[liftType] : null;
+  if (!meta) return null;
+  const Icon = meta.icon;
+  return (
+    <View style={[styles.liftBadge, { backgroundColor: `${meta.color}15` }]}>
+      <Icon size={11} color={meta.color} strokeWidth={2.5} />
+      <Text style={[styles.liftBadgeText, { color: meta.color }]}>{meta.shortLabel}</Text>
+    </View>
+  );
+}
+
 function HistoryCard({ entry, globalUnit }: { entry: HistoryEntry; globalUnit: UnitSystem }) {
   const fatigueTypes = entry.fatigueTypes ?? [];
   const converted = convertEntry(entry, globalUnit);
@@ -91,7 +110,10 @@ function HistoryCard({ entry, globalUnit }: { entry: HistoryEntry; globalUnit: U
         <Text style={styles.cardWeight}>{converted.finalWeight}</Text>
         <Text style={styles.cardUnit}>{unitLabel}</Text>
         <View style={styles.cardSpacer} />
-        <Text style={styles.cardDate}>{formatDate(entry.timestamp)}</Text>
+        <View style={styles.cardTopRight}>
+          <LiftBadge liftType={entry.liftType} />
+          <Text style={styles.cardDate}>{formatDate(entry.timestamp)}</Text>
+        </View>
       </View>
       <View style={styles.cardBottom}>
         <View style={styles.cardDetail}>
@@ -118,7 +140,7 @@ export default function HistoryScreen() {
 
   const handleClear = useCallback(() => {
     if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     }
     clearHistory();
   }, [clearHistory]);
@@ -262,6 +284,23 @@ const styles = StyleSheet.create({
   },
   cardSpacer: {
     flex: 1,
+  },
+  cardTopRight: {
+    alignItems: 'flex-end',
+    gap: 4,
+  },
+  liftBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  liftBadgeText: {
+    fontSize: 11,
+    fontWeight: '700' as const,
+    letterSpacing: 0.5,
   },
   cardDate: {
     fontSize: 12,

@@ -252,10 +252,11 @@ export default function CalculatorScreen() {
         fatigueTypes: activeFatigues,
         unit,
         finalWeight: result.finalWeight,
+        liftType: selectedLift,
       });
     }, 1500);
     return () => clearTimeout(timer);
-  }, [numericMax, targetPercent, activeFatigues, unit, result.finalWeight, addHistoryEntry]);
+  }, [numericMax, targetPercent, activeFatigues, unit, result.finalWeight, addHistoryEntry, selectedLift]);
 
   const handlePercentChange = useCallback((pct: number) => {
     if (Platform.OS !== 'web') {
