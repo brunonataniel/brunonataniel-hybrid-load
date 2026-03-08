@@ -879,6 +879,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderWidth: 1,
     borderColor: '#27272a',
+    minHeight: 150,
   },
   featureIconRow: {
     flexDirection: 'row',
@@ -899,6 +900,8 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     paddingHorizontal: 10,
     paddingVertical: 4,
+    minWidth: 100,
+    alignItems: 'center' as const,
   },
   reductionText: {
     color: '#000000',
