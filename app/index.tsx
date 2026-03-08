@@ -37,38 +37,38 @@ const VALUE_PROPS = [
 
 const FEATURES = [
   {
-    icon: Swords,
-    title: 'COMBAT',
-    subtitle: 'BJJ / MMA',
-    reduction: '15%',
-    description: 'Auto-adjusts load after grappling sessions',
-  },
-  {
     icon: Zap,
     title: 'HIIT',
     subtitle: 'Sprints',
-    reduction: '20%',
+    reductionRange: '6% — 20%',
     description: 'Accounts for CNS fatigue from high-intensity work',
+  },
+  {
+    icon: Swords,
+    title: 'COMBAT',
+    subtitle: 'BJJ / MMA',
+    reductionRange: '9% — 15%',
+    description: 'Auto-adjusts load after grappling sessions',
   },
   {
     icon: Activity,
     title: 'RUNNING',
     subtitle: 'Cardio',
-    reduction: '10%',
+    reductionRange: '3% — 10%',
     description: 'Factors in lower body fatigue from distance runs',
   },
   {
     icon: Footprints,
     title: 'STAIRS',
     subtitle: 'Stairmaster',
-    reduction: '10%',
+    reductionRange: '3% — 10%',
     description: 'Compensates for quad and glute pre-fatigue',
   },
   {
     icon: Waves,
     title: 'SWIM',
     subtitle: 'Laps',
-    reduction: '5%',
+    reductionRange: '3% — 10%',
     description: 'Minimal impact on lifting — smart micro-adjustment',
   },
 ];
@@ -275,7 +275,7 @@ export default function LandingScreen() {
                     <Icon size={20} color={Colors.accent} />
                   </View>
                   <View style={styles.reductionBadge}>
-                    <Text style={styles.reductionText}>-{feature.reduction}</Text>
+                    <Text style={styles.reductionText}>-{feature.reductionRange}</Text>
                   </View>
                 </View>
                 <Text style={styles.featureTitle}>{feature.title}</Text>
@@ -285,6 +285,8 @@ export default function LandingScreen() {
             );
           })}
         </View>
+
+        <Text style={styles.featureGridCaption}>Automatically scales based on your selected lift (Upper vs. Lower Body).</Text>
 
         <Animated.View
           style={[
@@ -567,7 +569,16 @@ const styles = StyleSheet.create({
   },
   featureGrid: {
     gap: 12,
+    marginBottom: 12,
+  },
+  featureGridCaption: {
+    fontSize: 12,
+    color: Colors.textTertiary,
+    textAlign: 'center' as const,
+    fontStyle: 'italic' as const,
+    lineHeight: 18,
     marginBottom: 48,
+    opacity: 0.7,
   },
   featureCard: {
     backgroundColor: Colors.surface,
