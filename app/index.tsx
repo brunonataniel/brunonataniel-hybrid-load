@@ -20,18 +20,18 @@ import { Colors } from '@/constants/colors';
 const VALUE_PROPS = [
   {
     icon: Brain,
-    title: 'CNS-AWARE SENSING',
-    description: "Standard calculators are 'dumb.' Hybrid Load adjusts your weights based on the Central Nervous System (CNS) fatigue from Combat Sports, HIIT, and Endurance.",
+    title: 'CNS-INFORMED LOGIC',
+    description: 'Standard calculators are static. Hybrid Load adjusts your training percentages based on the neurological fatigue load from Combat Sports, HIIT, and Endurance.',
   },
   {
     icon: Target,
-    title: 'DYNAMIC INTENSITY',
-    description: "Your 80% today isn't your 80% from yesterday. The engine calculates the 'Relative Load' that matches your body's current recovery state.",
+    title: 'DYNAMIC LOAD SCALING',
+    description: "Your 80% capacity changes daily. Our engine calculates the 'Relative Intensity' that matches your actual recovery state, not just a spreadsheet number.",
   },
   {
     icon: ShieldCheck,
-    title: 'INJURY PREVENTION',
-    description: "Stop ego-lifting when you're red-lining. The engine acts as a digital safety switch, ensuring you train at the highest possible intensity without overtraining.",
+    title: 'PERFORMANCE OPTIMIZATION',
+    description: 'Maximize every session by training at the correct intensity. The engine acts as a digital coach, ensuring you push your limits without hitting a wall.',
   },
 ];
 
