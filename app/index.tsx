@@ -322,7 +322,7 @@ export default function LandingScreen() {
           <View style={styles.inputRow}>
             <TextInput
               style={styles.emailInput}
-              placeholder="Email address / E-Mail-Adresse"
+              placeholder="Email address"
               placeholderTextColor={Colors.textTertiary}
               value={email}
               onChangeText={(text) => {
