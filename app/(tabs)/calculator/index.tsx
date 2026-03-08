@@ -430,6 +430,7 @@ export default function CalculatorScreen() {
               onChange={handleFatigueChange}
               isProUnlocked={isProUnlocked}
               onProGateTriggered={() => setShowProModal(true)}
+              selectedLift={selectedLift}
             />
 
             <BarbellVisual plates={result.plates} unit={unit} lift={selectedLift} />

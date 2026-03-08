@@ -1,9 +1,9 @@
-import React, { useCallback, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform, Animated } from 'react-native';
+import React, { useCallback, useRef, useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Platform, Animated, Easing } from 'react-native';
 
 import * as Haptics from 'expo-haptics';
 import { Swords, Footprints, Zap, Waves, PersonStanding } from 'lucide-react-native';
-import { FatigueType, FATIGUE_OPTIONS, getFatigueReductionPercent } from '@/utils/plateCalculator';
+import { FatigueType, LiftType, FATIGUE_OPTIONS, getFatigueReductionPercent, getScaledFatiguePercent } from '@/utils/plateCalculator';
 import { Colors } from '@/constants/colors';
 
 interface FatigueCheckInProps {
@@ -11,6 +11,7 @@ interface FatigueCheckInProps {
   onChange: (types: FatigueType[]) => void;
   isProUnlocked: boolean;
   onProGateTriggered: () => void;
+  selectedLift: LiftType;
 }
 
 const ICON_MAP: Record<FatigueType, typeof Zap> = {
@@ -21,16 +22,87 @@ const ICON_MAP: Record<FatigueType, typeof Zap> = {
   running: PersonStanding,
 };
 
+function AnimatedPercent({ value }: { value: number }) {
+  const [display, setDisplay] = useState<number>(value);
+  const animRef = useRef(new Animated.Value(0)).current;
+  const prevRef = useRef<number>(value);
+  const opacityAnim = useRef(new Animated.Value(1)).current;
+  const slideAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const from = prevRef.current;
+    const to = value;
+    if (from === to) return;
+
+    Animated.timing(opacityAnim, {
+      toValue: 0,
+      duration: 80,
+      useNativeDriver: true,
+    }).start(() => {
+      slideAnim.setValue(from > to ? -6 : 6);
+      animRef.setValue(0);
+      const listener = animRef.addListener(({ value: v }) => {
+        setDisplay(Math.round(from + (to - from) * v));
+      });
+
+      Animated.parallel([
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 200,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(animRef, {
+          toValue: 1,
+          duration: 250,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: false,
+        }),
+      ]).start(() => {
+        setDisplay(to);
+        prevRef.current = to;
+        animRef.removeListener(listener);
+      });
+    });
+
+    return () => {
+      animRef.removeAllListeners();
+    };
+  }, [value, animRef, opacityAnim, slideAnim]);
+
+  useEffect(() => {
+    prevRef.current = value;
+    setDisplay(value);
+  }, [value]);
+
+  return (
+    <Animated.Text
+      style={[
+        styles.optionReduction,
+        display > 0 && styles.optionReductionVisible,
+        { opacity: opacityAnim, transform: [{ translateY: slideAnim }] },
+      ]}
+    >
+      -{display}%
+    </Animated.Text>
+  );
+}
+
 function FatigueOption({
   type,
   label,
-  reduction,
+  scaledPercent,
   isActive,
   onToggle,
 }: {
   type: FatigueType;
   label: string;
-  reduction: string;
+  scaledPercent: number;
   isActive: boolean;
   onToggle: (type: FatigueType) => void;
 }) {
@@ -66,16 +138,34 @@ function FatigueOption({
         <Text style={[styles.optionLabel, isActive && styles.optionLabelActive]}>
           {label}
         </Text>
-        <Text style={[styles.optionReduction, isActive && styles.optionReductionActive]}>
-          -{reduction}
-        </Text>
+        <AnimatedPercent value={scaledPercent} />
       </TouchableOpacity>
     </Animated.View>
   );
 }
 
-export default React.memo(function FatigueCheckIn({ value, onChange, isProUnlocked, onProGateTriggered }: FatigueCheckInProps) {
-  const totalReduction = getFatigueReductionPercent(value);
+export default React.memo(function FatigueCheckIn({ value, onChange, isProUnlocked, onProGateTriggered, selectedLift }: FatigueCheckInProps) {
+  const totalReduction = getFatigueReductionPercent(value, selectedLift);
+  const totalOpacity = useRef(new Animated.Value(totalReduction > 0 ? 1 : 0)).current;
+  const badgeScale = useRef(new Animated.Value(1)).current;
+  const prevTotalRef = useRef<number>(totalReduction);
+
+  useEffect(() => {
+    const show = totalReduction > 0;
+    Animated.timing(totalOpacity, {
+      toValue: show ? 1 : 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+
+    if (prevTotalRef.current !== totalReduction && totalReduction > 0) {
+      Animated.sequence([
+        Animated.timing(badgeScale, { toValue: 1.12, duration: 100, useNativeDriver: true }),
+        Animated.timing(badgeScale, { toValue: 1, duration: 150, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      ]).start();
+    }
+    prevTotalRef.current = totalReduction;
+  }, [totalReduction, totalOpacity, badgeScale]);
 
   const handleToggle = useCallback((type: FatigueType) => {
     const isActive = value.includes(type);
@@ -97,14 +187,12 @@ export default React.memo(function FatigueCheckIn({ value, onChange, isProUnlock
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <Text style={styles.title}>FATIGUE CHECK-IN</Text>
-        {totalReduction > 0 && (
-          <View style={styles.totalBadge}>
-            <Text style={styles.totalBadgeText}>-{totalReduction}%</Text>
-            {totalReduction >= 30 && (
-              <Text style={styles.cappedText}>CAPPED</Text>
-            )}
-          </View>
-        )}
+        <Animated.View style={[styles.totalBadge, { opacity: totalOpacity, transform: [{ scale: badgeScale }] }]}>
+          <Text style={styles.totalBadgeText}>-{totalReduction}%</Text>
+          {totalReduction >= 30 && (
+            <Text style={styles.cappedText}>CAPPED</Text>
+          )}
+        </Animated.View>
       </View>
       <View style={styles.grid}>
         {FATIGUE_OPTIONS.map((opt) => (
@@ -112,7 +200,7 @@ export default React.memo(function FatigueCheckIn({ value, onChange, isProUnlock
             key={opt.type}
             type={opt.type}
             label={opt.label}
-            reduction={opt.reduction}
+            scaledPercent={getScaledFatiguePercent(opt.type, selectedLift)}
             isActive={value.includes(opt.type)}
             onToggle={handleToggle}
           />
@@ -204,6 +292,10 @@ const styles = StyleSheet.create({
   optionReduction: {
     fontSize: 10,
     fontWeight: '700' as const,
+    color: Colors.textTertiary,
+    opacity: 0.6,
+  },
+  optionReductionVisible: {
     color: Colors.textTertiary,
     opacity: 0.6,
   },

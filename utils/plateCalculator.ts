@@ -162,3 +162,9 @@ export const FATIGUE_OPTIONS: { type: FatigueType; label: string; reduction: str
   { type: 'swim', label: 'Swim', reduction: '5%' },
   { type: 'running', label: 'Run', reduction: '10%' },
 ];
+
+export function getScaledFatiguePercent(fatigueType: FatigueType, lift: LiftType): number {
+  const base = FATIGUE_REDUCTIONS[fatigueType] ?? 0;
+  const scaling = getLiftScaling(lift, fatigueType);
+  return Math.round(base * scaling * 100);
+}
