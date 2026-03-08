@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
-import { Weight, RotateCcw, Info, Shield, FileText, Building2, X } from 'lucide-react-native';
+import { Weight, RotateCcw, Info, X } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { calculatePlates, FatigueType, getPlateColor, getPlateLabel, PlateBreakdown, UnitSystem, getBarWeight, getFatigueReductionPercent } from '@/utils/plateCalculator';
@@ -460,24 +460,11 @@ export default function CalculatorScreen() {
               <View style={styles.legalDivider} />
               <View style={styles.legalRow}>
                 <TouchableOpacity onPress={() => router.push('/impressum')} testID="calc-impressum">
-                  <View style={styles.legalLink}>
-                    <Building2 size={12} color={Colors.textTertiary} />
-                    <Text style={styles.legalText}>Impressum</Text>
-                  </View>
+                  <Text style={styles.legalText}>Imprint / Impressum</Text>
                 </TouchableOpacity>
                 <View style={styles.legalDot} />
                 <TouchableOpacity onPress={() => router.push('/privacy')} testID="calc-privacy">
-                  <View style={styles.legalLink}>
-                    <Shield size={12} color={Colors.textTertiary} />
-                    <Text style={styles.legalText}>Privacy</Text>
-                  </View>
-                </TouchableOpacity>
-                <View style={styles.legalDot} />
-                <TouchableOpacity onPress={() => router.push('/terms')} testID="calc-terms">
-                  <View style={styles.legalLink}>
-                    <FileText size={12} color={Colors.textTertiary} />
-                    <Text style={styles.legalText}>Terms</Text>
-                  </View>
+                  <Text style={styles.legalText}>Privacy Policy / Datenschutz</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -793,17 +780,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 14,
-  },
-  legalLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
+    gap: 10,
   },
   legalText: {
-    fontSize: 11,
-    color: Colors.textTertiary,
-    fontWeight: '500' as const,
+    fontSize: 10,
+    color: '#555555',
+    fontWeight: '400' as const,
   },
   legalDot: {
     width: 2.5,
