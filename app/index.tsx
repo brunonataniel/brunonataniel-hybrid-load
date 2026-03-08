@@ -13,20 +13,20 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Swords, Zap, Activity, Waves, Footprints, ChevronRight, Shield, Building2, Mail, Brain, Target, ShieldCheck } from 'lucide-react-native';
+import { Swords, Zap, Activity, Waves, Footprints, ChevronRight, Shield, Building2, Mail, Brain, RefreshCw, ShieldCheck } from 'lucide-react-native';
 import { useWindowDimensions } from 'react-native';
 import { Colors } from '@/constants/colors';
 
 const VALUE_PROPS = [
   {
     icon: Brain,
-    title: 'CNS-INFORMED LOGIC',
-    description: 'Standard calculators are static. Hybrid Load adjusts your training percentages based on the neurological fatigue load from Combat Sports, HIIT, and Endurance.',
+    title: 'LOCAL VS. SYSTEMIC LOGIC',
+    description: "We don't punish your Bench for your Run. HybridLoad separates CNS drain from local muscular fatigue — so upper body lifts only feel what actually affects them.",
   },
   {
-    icon: Target,
-    title: 'DYNAMIC LOAD SCALING',
-    description: "Your 80% capacity changes daily. Our engine calculates the 'Relative Intensity' that matches your actual recovery state, not just a spreadsheet number.",
+    icon: RefreshCw,
+    title: 'INSTANT RECALIBRATION',
+    description: 'Switch between Squat, Bench, Deadlift, and OHP — watch your suggested load update in real-time as the engine rescales fatigue to your specific lift.',
   },
   {
     icon: ShieldCheck,
@@ -180,13 +180,11 @@ export default function LandingScreen() {
           </View>
 
           <Text style={styles.heroHeadline}>
-            HYBRID{'\n'}FATIGUE{'\n'}IS <Text style={styles.heroAccent}>REAL.</Text>
+            THE FATIGUE{'\n'}ENGINE BUILT{'\n'}FOR <Text style={styles.heroAccent}>SPECIFICITY.</Text>
           </Text>
 
           <Text style={styles.heroSubtext}>
-            The gym math is over.{'\n'}
-            Plate calculator with a built-in fatigue engine.{'\n'}
-            Train smarter after combat, cardio, or HIIT.
+            Stop guessing your recovery. HybridLoad scales{'\n'}fatigue based on your specific lift, separating CNS{'\n'}drain from local muscular fatigue.{'\n'}High-performance math for the hybrid athlete.
           </Text>
 
           <View style={styles.statsRow}>
@@ -308,6 +306,10 @@ export default function LandingScreen() {
           </TouchableOpacity>
 
           <Text style={styles.ctaNote}>Privacy First. Accounts only required for Pro Features.</Text>
+
+          <View style={styles.betaBadge}>
+            <Text style={styles.betaBadgeText}>V1 Engine Logic based on established Sport Science principles.</Text>
+          </View>
         </Animated.View>
 
         <View style={styles.waitlistSection}>
@@ -644,6 +646,23 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 12,
     color: Colors.textTertiary,
+  },
+  betaBadge: {
+    marginTop: 14,
+    backgroundColor: 'rgba(204, 255, 0, 0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(204, 255, 0, 0.12)',
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  betaBadgeText: {
+    fontSize: 11,
+    color: Colors.textTertiary,
+    textAlign: 'center' as const,
+    fontWeight: '500' as const,
+    letterSpacing: 0.3,
+    lineHeight: 16,
   },
   waitlistSection: {
     marginBottom: 40,

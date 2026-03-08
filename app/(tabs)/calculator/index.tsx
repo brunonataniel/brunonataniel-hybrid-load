@@ -665,6 +665,10 @@ const styles = StyleSheet.create({
   inputUnit: {
     position: 'absolute' as const,
     right: 18,
+    top: 0,
+    bottom: 0,
+    lineHeight: 52,
+    textAlignVertical: 'center' as const,
     fontSize: 14,
     fontWeight: '600' as const,
     color: Colors.textSecondary,
