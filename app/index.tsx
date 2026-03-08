@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Animated,
+  Easing,
   TextInput,
   ActivityIndicator,
   Linking,
@@ -146,15 +147,17 @@ export default function LandingScreen() {
       Animated.sequence([
         Animated.timing(shiftAnim, {
           toValue: 1,
-          duration: 1800,
-          delay: 1200,
+          duration: 3200,
+          delay: 2000,
           useNativeDriver: false,
+          easing: Easing.inOut(Easing.ease),
         }),
         Animated.timing(shiftAnim, {
           toValue: 0,
-          duration: 1800,
-          delay: 800,
+          duration: 3200,
+          delay: 1500,
           useNativeDriver: false,
+          easing: Easing.inOut(Easing.ease),
         }),
       ])
     ).start();
