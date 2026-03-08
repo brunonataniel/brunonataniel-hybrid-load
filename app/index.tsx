@@ -9,6 +9,7 @@ import {
   TextInput,
   ActivityIndicator,
   Linking,
+  Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -134,8 +135,16 @@ export default function LandingScreen() {
             },
           ]}
         >
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>HYBRID LOAD</Text>
+          <View style={styles.logoRow}>
+            <Image
+              source={{ uri: 'https://r2-pub.rork.com/generated-images/ad7cd1ad-6a31-4577-b3a6-dd32ceddc30d.png' }}
+              style={styles.headerLogo}
+              resizeMode="contain"
+            />
+            <View style={styles.logoTextWrap}>
+              <Text style={styles.logoTextHybrid}>HYBRID</Text>
+              <Text style={styles.logoTextLoad}>LOAD</Text>
+            </View>
           </View>
 
           <Text style={styles.heroHeadline}>
@@ -332,20 +341,32 @@ const styles = StyleSheet.create({
   heroSection: {
     marginBottom: 48,
   },
-  badge: {
-    alignSelf: 'flex-start',
-    backgroundColor: Colors.accentMuted,
-    borderWidth: 1,
-    borderColor: 'rgba(204, 255, 0, 0.25)',
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    marginBottom: 24,
+  logoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 28,
   },
-  badgeText: {
+  headerLogo: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+  },
+  logoTextWrap: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 6,
+  },
+  logoTextHybrid: {
+    fontSize: 18,
+    fontWeight: '900' as const,
+    color: '#FFFFFF',
+    letterSpacing: 2,
+  },
+  logoTextLoad: {
+    fontSize: 18,
+    fontWeight: '900' as const,
     color: Colors.accent,
-    fontSize: 11,
-    fontWeight: '700' as const,
     letterSpacing: 2,
   },
   heroHeadline: {

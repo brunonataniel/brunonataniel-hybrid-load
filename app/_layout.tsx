@@ -1,11 +1,12 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { View, StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
 import { AppProvider } from "@/providers/AppProvider";
+import AnimatedSplash from "@/components/AnimatedSplash";
 
 void SplashScreen.preventAutoHideAsync().catch(() => {});
 console.log('[RootLayout] Initializing app v2');
@@ -25,9 +26,18 @@ function RootLayoutNav() {
   );
 }
 
+const LOGO_URL = 'https://r2-pub.rork.com/generated-images/ad7cd1ad-6a31-4577-b3a6-dd32ceddc30d.png';
+
 export default function RootLayout() {
+  const [showSplash, setShowSplash] = useState<boolean>(true);
+
   useEffect(() => {
     void SplashScreen.hideAsync();
+  }, []);
+
+  const handleSplashFinish = useCallback(() => {
+    console.log('[RootLayout] Splash animation finished');
+    setShowSplash(false);
   }, []);
 
   return (
@@ -38,6 +48,9 @@ export default function RootLayout() {
             <View style={styles.innerContainer}>
               <StatusBar style="light" />
               <RootLayoutNav />
+              {showSplash && (
+                <AnimatedSplash onFinish={handleSplashFinish} logoUrl={LOGO_URL} />
+              )}
             </View>
           </View>
         </GestureHandlerRootView>
