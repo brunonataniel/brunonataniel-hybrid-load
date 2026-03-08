@@ -213,10 +213,26 @@ export function getMarginalFatiguePercent(
     return { percent: fullPercent, isAdjusted: false };
   }
 
-  if (activeFatigues.includes(fatigueType)) {
-    return { percent: fullPercent, isAdjusted: false };
+  const isActive = activeFatigues.includes(fatigueType);
+
+  if (isActive) {
+    const without = activeFatigues.filter(f => f !== fatigueType);
+    if (without.length === 0) {
+      return { percent: fullPercent, isAdjusted: false };
+    }
+    const totalWith = computeTotalReduction(activeFatigues, lift);
+    const totalWithout = computeTotalReduction(without, lift);
+    const marginal = Math.round((totalWith - totalWithout) * 100);
+    const isAdj = marginal !== fullPercent;
+    console.log(`[MarginalPreview] Active ${fatigueType}: marginal=${marginal}%, base=${fullPercent}%, adjusted=${isAdj}`);
+    return { percent: marginal, isAdjusted: isAdj };
   }
 
-  const marginal = base * scaling * SYSTEMIC_OVERLAY_FACTOR;
-  return { percent: Math.round(marginal * 100), isAdjusted: true };
+  const hypothetical = [...activeFatigues, fatigueType];
+  const totalWith = computeTotalReduction(hypothetical, lift);
+  const totalWithout = computeTotalReduction(activeFatigues, lift);
+  const marginal = Math.round((totalWith - totalWithout) * 100);
+  const isAdj = marginal !== fullPercent;
+  console.log(`[MarginalPreview] Inactive ${fatigueType}: marginal=${marginal}%, base=${fullPercent}%, adjusted=${isAdj}`);
+  return { percent: marginal, isAdjusted: isAdj };
 }
