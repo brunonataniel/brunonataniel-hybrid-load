@@ -40,35 +40,35 @@ const FEATURES = [
     icon: Zap,
     title: 'HIIT',
     subtitle: 'Sprints',
-    reductionRange: '6% — 20%',
+    reductionRange: '6% to 20%',
     description: 'Accounts for CNS fatigue from high-intensity work',
   },
   {
     icon: Swords,
     title: 'COMBAT',
     subtitle: 'BJJ / MMA',
-    reductionRange: '9% — 15%',
+    reductionRange: '9% to 15%',
     description: 'Auto-adjusts load after grappling sessions',
   },
   {
     icon: Activity,
     title: 'RUNNING',
-    subtitle: 'Cardio',
-    reductionRange: '3% — 10%',
+    subtitle: 'Endurance / Zone 2',
+    reductionRange: '3% to 10%',
     description: 'Factors in lower body fatigue from distance runs',
   },
   {
     icon: Footprints,
     title: 'STAIRS',
     subtitle: 'Stairmaster',
-    reductionRange: '3% — 10%',
+    reductionRange: '3% to 10%',
     description: 'Compensates for quad and glute pre-fatigue',
   },
   {
     icon: Waves,
     title: 'SWIM',
     subtitle: 'Laps',
-    reductionRange: '3% — 10%',
+    reductionRange: '3% to 10%',
     description: 'Minimal impact on lifting — smart micro-adjustment',
   },
 ];
@@ -286,7 +286,7 @@ export default function LandingScreen() {
           })}
         </View>
 
-        <Text style={styles.featureGridCaption}>Automatically scales based on your selected lift (Upper vs. Lower Body).</Text>
+        <Text style={styles.featureGridCaption}>Scales based on Upper vs. Lower body lifts.</Text>
 
         <Animated.View
           style={[
