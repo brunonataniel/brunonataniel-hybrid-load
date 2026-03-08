@@ -10,10 +10,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ActivityIndicator,
 } from 'react-native';
-import { Lock, Zap, CheckCircle, X } from 'lucide-react-native';
+import { Lock, Zap, CheckCircle, X, Clock } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Colors } from '@/constants/colors';
+import { getSpotsRemaining, claimSpot, TOTAL_BETA_SPOTS } from '@/utils/spotsCounter';
 
 interface ProGateModalProps {
   visible: boolean;
@@ -29,6 +32,27 @@ export default React.memo(function ProGateModal({ visible, onClose, onUnlock }: 
   const slideAnim = useRef(new Animated.Value(40)).current;
   const successScale = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const countAnim = useRef(new Animated.Value(1)).current;
+  const queryClient = useQueryClient();
+
+  const spotsQuery = useQuery({
+    queryKey: ['beta-spots-remaining'],
+    queryFn: getSpotsRemaining,
+    staleTime: 30_000,
+    refetchOnWindowFocus: true,
+    enabled: visible,
+  });
+
+  const spotsRemaining = spotsQuery.data ?? TOTAL_BETA_SPOTS;
+  const isSoldOut = spotsRemaining <= 0;
+
+  const claimMutation = useMutation({
+    mutationFn: claimSpot,
+    onSuccess: (data) => {
+      console.log('[ProGate] Claim result:', data);
+      queryClient.setQueryData(['beta-spots-remaining'], data.spotsRemaining);
+    },
+  });
 
   useEffect(() => {
     if (visible) {
@@ -53,7 +77,7 @@ export default React.memo(function ProGateModal({ visible, onClose, onUnlock }: 
   }, [visible, fadeAnim, slideAnim]);
 
   useEffect(() => {
-    if (visible && !submitted) {
+    if (visible && !submitted && !isSoldOut) {
       const loop = Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, { toValue: 1.15, duration: 900, useNativeDriver: true }),
@@ -63,13 +87,21 @@ export default React.memo(function ProGateModal({ visible, onClose, onUnlock }: 
       loop.start();
       return () => loop.stop();
     }
-  }, [visible, submitted, pulseAnim]);
+  }, [visible, submitted, pulseAnim, isSoldOut]);
+
+  const animateCountChange = useCallback(() => {
+    Animated.sequence([
+      Animated.timing(countAnim, { toValue: 0.6, duration: 120, useNativeDriver: true }),
+      Animated.timing(countAnim, { toValue: 1.1, duration: 150, useNativeDriver: true }),
+      Animated.timing(countAnim, { toValue: 1, duration: 100, useNativeDriver: true }),
+    ]).start();
+  }, [countAnim]);
 
   const validateEmail = useCallback((text: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text);
   }, []);
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     if (!email.trim()) {
       setError('Email required');
       return;
@@ -79,25 +111,51 @@ export default React.memo(function ProGateModal({ visible, onClose, onUnlock }: 
       return;
     }
 
+    if (isSoldOut) {
+      return;
+    }
+
     if (Platform.OS !== 'web') {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
 
-    setSubmitted(true);
     setError('');
 
-    successScale.setValue(0);
-    Animated.spring(successScale, {
-      toValue: 1,
-      friction: 4,
-      tension: 80,
-      useNativeDriver: true,
-    }).start();
+    try {
+      const result = await claimMutation.mutateAsync();
+      animateCountChange();
 
-    setTimeout(() => {
-      onUnlock();
-    }, 2200);
-  }, [email, validateEmail, onUnlock, successScale]);
+      if (result.success) {
+        setSubmitted(true);
+        successScale.setValue(0);
+        Animated.spring(successScale, {
+          toValue: 1,
+          friction: 4,
+          tension: 80,
+          useNativeDriver: true,
+        }).start();
+
+        setTimeout(() => {
+          onUnlock();
+        }, 2200);
+      } else {
+        setError('All spots have been claimed.');
+      }
+    } catch (err) {
+      console.log('[ProGate] Claim error:', err);
+      setSubmitted(true);
+      successScale.setValue(0);
+      Animated.spring(successScale, {
+        toValue: 1,
+        friction: 4,
+        tension: 80,
+        useNativeDriver: true,
+      }).start();
+      setTimeout(() => {
+        onUnlock();
+      }, 2200);
+    }
+  }, [email, validateEmail, onUnlock, successScale, isSoldOut, claimMutation, animateCountChange]);
 
   const handleClose = useCallback(() => {
     Animated.parallel([
@@ -146,26 +204,53 @@ export default React.memo(function ProGateModal({ visible, onClose, onUnlock }: 
 
             {!submitted ? (
               <>
-                <Animated.View style={[styles.iconContainer, { transform: [{ scale: pulseAnim }] }]}>
-                  <Lock size={24} color="#0D0D0D" strokeWidth={2.5} />
+                <Animated.View style={[
+                  styles.iconContainer,
+                  isSoldOut ? styles.iconContainerSoldOut : undefined,
+                  { transform: [{ scale: isSoldOut ? 1 : pulseAnim }] },
+                ]}>
+                  {isSoldOut ? (
+                    <Clock size={24} color="#71717A" strokeWidth={2.5} />
+                  ) : (
+                    <Lock size={24} color="#0D0D0D" strokeWidth={2.5} />
+                  )}
                 </Animated.View>
 
                 <View style={styles.statusRow}>
-                  <View style={styles.statusDot} />
-                  <Text style={styles.statusText}>BETA PHASE ACTIVE</Text>
+                  <View style={[styles.statusDot, isSoldOut && styles.statusDotSoldOut]} />
+                  <Text style={[styles.statusText, isSoldOut && styles.statusTextSoldOut]}>
+                    {isSoldOut ? 'BETA PASSES EXHAUSTED' : 'BETA PHASE ACTIVE'}
+                  </Text>
                 </View>
 
-                <Text style={styles.headline}>UNLOCK MULTI-ENGINE{'\n'}LOGIC</Text>
+                <Text style={styles.headline}>
+                  {isSoldOut ? 'ALL PASSES\nCLAIMED' : 'UNLOCK MULTI-ENGINE\nLOGIC'}
+                </Text>
 
                 <Text style={styles.subtext}>
-                  Stacking multiple fatigue sources (e.g., Combat + HIIT) is a Pro feature. During our Beta Phase, we are granting{' '}
-                  <Text style={styles.subtextHighlight}>Lifetime Pro Access</Text> to the first 50 testers who provide feedback.
+                  {isSoldOut
+                    ? 'All 50 Lifetime Pro passes have been claimed. Join the waitlist to be notified when new spots open up.'
+                    : (
+                      <>
+                        Stacking multiple fatigue sources (e.g., Combat + HIIT) is a Pro feature. During our Beta Phase, we are granting{' '}
+                        <Text style={styles.subtextHighlight}>Lifetime Pro Access</Text> to the first 50 testers who provide feedback.
+                      </>
+                    )
+                  }
                 </Text>
 
                 <View style={styles.statsRow}>
                   <View style={styles.statBlock}>
-                    <Text style={styles.statValue}>50</Text>
-                    <Text style={styles.statLabel}>SPOTS LEFT</Text>
+                    <Animated.View style={{ transform: [{ scale: countAnim }] }}>
+                      {spotsQuery.isLoading ? (
+                        <ActivityIndicator size="small" color={Colors.textPrimary} />
+                      ) : (
+                        <Text style={[styles.statValue, isSoldOut && styles.statValueSoldOut]}>
+                          {spotsRemaining}
+                        </Text>
+                      )}
+                    </Animated.View>
+                    <Text style={styles.statLabel}>{isSoldOut ? 'CLAIMED' : 'SPOTS LEFT'}</Text>
                   </View>
                   <View style={styles.statDivider} />
                   <View style={styles.statBlock}>
@@ -199,15 +284,31 @@ export default React.memo(function ProGateModal({ visible, onClose, onUnlock }: 
 
                 <TouchableOpacity
                   testID="claim-pass-button"
-                  style={styles.claimButton}
+                  style={[styles.claimButton, isSoldOut && styles.claimButtonSoldOut]}
                   onPress={handleSubmit}
                   activeOpacity={0.8}
+                  disabled={claimMutation.isPending}
                 >
-                  <Zap size={16} color="#0D0D0D" strokeWidth={2.5} />
-                  <Text style={styles.claimButtonText}>CLAIM MY LIFETIME PASS</Text>
+                  {claimMutation.isPending ? (
+                    <ActivityIndicator size="small" color={isSoldOut ? '#A1A1AA' : '#0D0D0D'} />
+                  ) : isSoldOut ? (
+                    <>
+                      <Clock size={16} color="#A1A1AA" strokeWidth={2.5} />
+                      <Text style={styles.claimButtonTextSoldOut}>JOIN THE WAITLIST</Text>
+                    </>
+                  ) : (
+                    <>
+                      <Zap size={16} color="#0D0D0D" strokeWidth={2.5} />
+                      <Text style={styles.claimButtonText}>CLAIM MY LIFETIME PASS</Text>
+                    </>
+                  )}
                 </TouchableOpacity>
 
                 <Text style={styles.disclaimer}>No spam. Used only for beta coordination.</Text>
+
+                <Text style={styles.legalDisclaimer}>
+                  Offer limited to the first 50 unique beta testers. Real-time count based on database timestamps.
+                </Text>
               </>
             ) : (
               <Animated.View style={[styles.successContainer, { transform: [{ scale: successScale }] }]}>
@@ -275,6 +376,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 16,
   },
+  iconContainerSoldOut: {
+    backgroundColor: '#27272A',
+  },
   statusRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -287,12 +391,18 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     backgroundColor: Colors.accent,
   },
+  statusDotSoldOut: {
+    backgroundColor: '#EF4444',
+  },
   statusText: {
     fontSize: 10,
     fontWeight: '700' as const,
     letterSpacing: 1.5,
     color: Colors.accent,
     opacity: 0.9,
+  },
+  statusTextSoldOut: {
+    color: '#EF4444',
   },
   headline: {
     fontSize: 22,
@@ -336,6 +446,9 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700' as const,
     color: Colors.textPrimary,
+  },
+  statValueSoldOut: {
+    color: '#EF4444',
   },
   statLabel: {
     fontSize: 9,
@@ -384,16 +497,35 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     marginBottom: 12,
   },
+  claimButtonSoldOut: {
+    backgroundColor: '#27272A',
+    borderWidth: 1,
+    borderColor: '#3F3F46',
+  },
   claimButtonText: {
     fontSize: 14,
     fontWeight: '800' as const,
     color: '#0D0D0D',
     letterSpacing: 0.8,
   },
+  claimButtonTextSoldOut: {
+    fontSize: 14,
+    fontWeight: '800' as const,
+    color: '#A1A1AA',
+    letterSpacing: 0.8,
+  },
   disclaimer: {
     fontSize: 11,
     color: Colors.textTertiary,
     opacity: 0.7,
+  },
+  legalDisclaimer: {
+    fontSize: 9,
+    color: Colors.textTertiary,
+    opacity: 0.5,
+    textAlign: 'center',
+    marginTop: 10,
+    lineHeight: 13,
   },
   successContainer: {
     alignItems: 'center',
