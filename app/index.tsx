@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Swords, Zap, Activity, Waves, Footprints, ChevronRight, Shield, Building2, Mail, BarChart3, Gauge, ShieldHalf, Dumbbell, Crosshair, Target, Users } from 'lucide-react-native';
+import { Swords, Zap, Activity, Waves, Footprints, ChevronRight, Shield, Building2, Mail, BarChart3, Gauge, ShieldHalf, Dumbbell, BrainCircuit, ScanLine, ShieldCheck } from 'lucide-react-native';
 import { useWindowDimensions } from 'react-native';
 import { Colors } from '@/constants/colors';
 
@@ -42,19 +42,19 @@ const ROADMAP_FEATURES = [
 
 const VALUE_PROPS = [
   {
-    icon: Crosshair,
-    title: 'THE NEURAL GAP',
-    description: 'Standard math ignores the 10km run you did this morning. We don\'t. Experience the first engine that accounts for Systemic Fatigue.',
+    icon: BrainCircuit,
+    title: 'SYSTEMIC LOAD LOGIC',
+    description: 'Scale your intensity based on total body drain. No more guessing how your morning cardio affects your evening lift.',
   },
   {
-    icon: Target,
-    title: 'LOCALIZED SCALING',
-    description: 'A BJJ session kills your Squat, but your Bench is still prime. Our engine knows exactly which muscle groups are compromised.',
+    icon: ScanLine,
+    title: 'TARGETED LIFT PRECISION',
+    description: 'Isolate your fatigue. Our engine differentiates between upper and lower body stress to keep your prime lifts moving.',
   },
   {
-    icon: Users,
-    title: 'GENESIS 50 ACCESS',
-    description: "48 spots remain. Joining the Beta doesn't make you a user—it makes you an architect of the next standard in performance.",
+    icon: ShieldCheck,
+    title: 'THE PERFORMANCE SHIELD',
+    description: 'Protect your progress. Bridge the gap between static percentages and the reality of a hybrid training schedule.',
   },
 ];
 
@@ -253,11 +253,11 @@ export default function LandingScreen() {
           </View>
 
           <Text style={styles.heroHeadline}>
-            STOP LIFTING{' '}ON{' '}<Text style={styles.heroAccent}>YESTERDAY'S{' '}MATH.</Text>
+            STOP LIFTING{' '}ON{' '}<Text style={styles.heroAccent}>STATIC{' '}PERCENTAGES.</Text>
           </Text>
 
           <Text style={styles.heroSubtext}>
-            Your body isn't a constant. HybridLoad is the first fatigue engine that scales your load based on your actual CNS drain.
+            Your recovery changes daily. Your math should too. Recalibrate your load based on real-time fatigue.
           </Text>
 
           <Animated.View style={[
