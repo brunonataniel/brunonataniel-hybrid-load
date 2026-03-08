@@ -116,15 +116,15 @@ function AnimatedWeightDisplay({ animValue }: { animValue: Animated.Value }) {
 
   useEffect(() => {
     const id = animValue.addListener(({ value }) => {
-      const weight = 100 - (value * 17.5);
-      const rounded = Math.round(weight * 2) / 2;
-      const text = rounded % 1 === 0 ? String(rounded) : rounded.toFixed(1);
+      const weight = 140 - (value * 20);
+      const rounded = Math.round(weight);
+      const text = String(rounded);
       updateText(text);
     });
     return () => animValue.removeListener(id);
   }, [animValue, updateText]);
 
-  return <Text ref={textRef} style={compStyles.hybridWeightText}>100</Text>;
+  return <Text ref={textRef} style={compStyles.hybridWeightText}>140</Text>;
 }
 
 export default function LandingScreen() {
@@ -287,7 +287,7 @@ export default function LandingScreen() {
                   <Text style={styles.comparisonLabel}>STANDARD APP</Text>
                 </View>
                 <View style={styles.comparisonWeightBox}>
-                  <Text style={styles.comparisonWeightStatic}>100</Text>
+                  <Text style={styles.comparisonWeightStatic}>140</Text>
                   <Text style={styles.comparisonUnitStatic}>KG</Text>
                 </View>
                 <Text style={styles.comparisonNote}>Same number.{'\n'}Every day.</Text>
