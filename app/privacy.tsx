@@ -145,7 +145,7 @@ export default function PrivacyScreen() {
 
         <View style={styles.copyrightSection}>
           <Text style={styles.copyrightText}>
-            Diese Datenschutzerkl\u00e4rung wurde von den Fachanw\u00e4lten der IT-Recht Kanzlei erstellt und ist urheberrechtlich gesch\u00fctzt.
+            Copyright-Hinweis: Diese Datenschutzerkl\u00e4rung wurde von den Fachanw\u00e4lten der IT-Recht Kanzlei erstellt und ist urheberrechtlich gesch\u00fctzt (https://www.it-recht-kanzlei.de)
           </Text>
         </View>
       </ScrollView>
