@@ -1010,13 +1010,13 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: Colors.textSecondary,
     lineHeight: 19,
-    marginBottom: 4,
+    marginBottom: 8,
   },
   waitlistDescDe: {
     fontSize: 13,
     color: Colors.textTertiary,
     lineHeight: 19,
-    marginBottom: 16,
+    marginBottom: 32,
   },
   inputRow: {
     gap: 10,
