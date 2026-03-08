@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import createContextHook from '@nkzw/create-context-hook';
-import { FatigueType, UnitSystem, convertWeight } from '@/utils/plateCalculator';
+import { FatigueType, UnitSystem, LiftType, convertWeight } from '@/utils/plateCalculator';
 
 export interface HistoryEntry {
   id: string;
@@ -29,6 +29,7 @@ export const [AppProvider, useApp] = createContextHook(() => {
   const [unit, setUnit] = useState<UnitSystem>('lbs');
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [isProUnlocked, setIsProUnlocked] = useState<boolean>(false);
+  const [selectedLift, setSelectedLift] = useState<LiftType>('squat');
 
   const storedDataQuery = useQuery({
     queryKey: ['stored-data'],
@@ -112,6 +113,18 @@ export const [AppProvider, useApp] = createContextHook(() => {
     });
   }, [saveHistory]);
 
+  const { mutate: saveLift } = useMutation({
+    mutationFn: async (value: LiftType) => {
+      await AsyncStorage.setItem('hybrid_load_lift', value);
+      return value;
+    },
+  });
+
+  const updateLift = useCallback((lift: LiftType) => {
+    setSelectedLift(lift);
+    saveLift(lift);
+  }, [saveLift]);
+
   const { mutate: savePro } = useMutation({
     mutationFn: async (value: boolean) => {
       await AsyncStorage.setItem(STORAGE_KEYS.proUnlocked, String(value));
@@ -140,5 +153,7 @@ export const [AppProvider, useApp] = createContextHook(() => {
     addHistoryEntry,
     clearHistory,
     unlockPro,
-  }), [maxLift, unit, history, storedDataQuery.isLoading, updateMaxLift, isProUnlocked, updateUnit, addHistoryEntry, clearHistory, unlockPro]);
+    selectedLift,
+    updateLift,
+  }), [maxLift, unit, history, storedDataQuery.isLoading, updateMaxLift, isProUnlocked, updateUnit, addHistoryEntry, clearHistory, unlockPro, selectedLift, updateLift]);
 });

@@ -21,6 +21,7 @@ import { Colors } from '@/constants/colors';
 import { calculatePlates, FatigueType, getPlateColor, getPlateLabel, PlateBreakdown, UnitSystem, getBarWeight, getFatigueReductionPercent } from '@/utils/plateCalculator';
 import BarbellVisual from '@/components/BarbellVisual';
 import FatigueCheckIn from '@/components/FatigueToggle';
+import LiftSelector from '@/components/LiftSelector';
 import ProGateModal from '@/components/ProGateModal';
 import { useApp } from '@/providers/AppProvider';
 
@@ -205,7 +206,7 @@ function useCountingAnimation(targetValue: number, duration: number = 350) {
 }
 
 export default function CalculatorScreen() {
-  const { maxLift, unit, updateMaxLift, updateUnit, addHistoryEntry, isProUnlocked, unlockPro } = useApp();
+  const { maxLift, unit, updateMaxLift, updateUnit, addHistoryEntry, isProUnlocked, unlockPro, selectedLift, updateLift } = useApp();
   const router = useRouter();
   const [targetPercent, setTargetPercent] = useState<number>(80);
   const [activeFatigues, setActiveFatigues] = useState<FatigueType[]>([]);
@@ -220,13 +221,13 @@ export default function CalculatorScreen() {
   }, [maxLift]);
 
   const result = useMemo(
-    () => calculatePlates(numericMax, targetPercent, activeFatigues, unit),
-    [numericMax, targetPercent, activeFatigues, unit]
+    () => calculatePlates(numericMax, targetPercent, activeFatigues, unit, selectedLift),
+    [numericMax, targetPercent, activeFatigues, unit, selectedLift]
   );
 
   const totalReductionPercent = useMemo(
-    () => getFatigueReductionPercent(activeFatigues),
-    [activeFatigues]
+    () => getFatigueReductionPercent(activeFatigues, selectedLift),
+    [activeFatigues, selectedLift]
   );
 
   useEffect(() => {
@@ -419,6 +420,11 @@ export default function CalculatorScreen() {
               </View>
             </View>
 
+            <LiftSelector
+              value={selectedLift}
+              onChange={updateLift}
+            />
+
             <FatigueCheckIn
               value={activeFatigues}
               onChange={handleFatigueChange}
@@ -426,7 +432,7 @@ export default function CalculatorScreen() {
               onProGateTriggered={() => setShowProModal(true)}
             />
 
-            <BarbellVisual plates={result.plates} unit={unit} />
+            <BarbellVisual plates={result.plates} unit={unit} lift={selectedLift} />
 
             {result.plates.length > 0 ? (
               <View style={styles.plateBreakdown}>

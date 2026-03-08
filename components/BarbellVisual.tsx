@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
-import { PlateBreakdown, getPlateColor, getPlateLabel, UnitSystem } from '@/utils/plateCalculator';
+import { PlateBreakdown, getPlateColor, getPlateLabel, UnitSystem, LiftType } from '@/utils/plateCalculator';
 import { Colors } from '@/constants/colors';
 
 interface BarbellVisualProps {
   plates: PlateBreakdown[];
   unit: UnitSystem;
+  lift?: LiftType;
 }
 
 const PLATE_HEIGHT_MAP: Record<number, number> = {
@@ -144,7 +145,147 @@ function buildVisualPlates(expanded: number[], unit: UnitSystem): { plates: Visu
   };
 }
 
-export default React.memo(function BarbellVisual({ plates, unit }: BarbellVisualProps) {
+function LiftSilhouette({ lift }: { lift: LiftType }) {
+  const label = lift === 'squat' ? 'SQT' : lift === 'bench' ? 'BNC' : lift === 'deadlift' ? 'DL' : 'OHP';
+  const silhouetteColor = 'rgba(204, 255, 0, 0.12)';
+  const textColor = 'rgba(204, 255, 0, 0.5)';
+
+  if (lift === 'squat') {
+    return (
+      <View style={silhouetteStyles.wrapper}>
+        <View style={silhouetteStyles.figure}>
+          <View style={[silhouetteStyles.head, { backgroundColor: silhouetteColor }]} />
+          <View style={[silhouetteStyles.torsoSquat, { backgroundColor: silhouetteColor }]} />
+          <View style={silhouetteStyles.legRow}>
+            <View style={[silhouetteStyles.legBent, { backgroundColor: silhouetteColor }]} />
+            <View style={[silhouetteStyles.legBent, { backgroundColor: silhouetteColor }]} />
+          </View>
+        </View>
+        <Text style={[silhouetteStyles.label, { color: textColor }]}>{label}</Text>
+      </View>
+    );
+  }
+
+  if (lift === 'bench') {
+    return (
+      <View style={silhouetteStyles.wrapper}>
+        <View style={silhouetteStyles.benchFigure}>
+          <View style={[silhouetteStyles.benchBody, { backgroundColor: silhouetteColor }]} />
+          <View style={[silhouetteStyles.benchArm, { backgroundColor: silhouetteColor }]} />
+        </View>
+        <Text style={[silhouetteStyles.label, { color: textColor }]}>{label}</Text>
+      </View>
+    );
+  }
+
+  if (lift === 'deadlift') {
+    return (
+      <View style={silhouetteStyles.wrapper}>
+        <View style={silhouetteStyles.figure}>
+          <View style={[silhouetteStyles.head, { backgroundColor: silhouetteColor }]} />
+          <View style={[silhouetteStyles.torsoDL, { backgroundColor: silhouetteColor }]} />
+          <View style={silhouetteStyles.legRow}>
+            <View style={[silhouetteStyles.legStraight, { backgroundColor: silhouetteColor }]} />
+            <View style={[silhouetteStyles.legStraight, { backgroundColor: silhouetteColor }]} />
+          </View>
+        </View>
+        <Text style={[silhouetteStyles.label, { color: textColor }]}>{label}</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={silhouetteStyles.wrapper}>
+      <View style={silhouetteStyles.figure}>
+        <View style={[silhouetteStyles.armUp, { backgroundColor: silhouetteColor }]} />
+        <View style={[silhouetteStyles.head, { backgroundColor: silhouetteColor }]} />
+        <View style={[silhouetteStyles.torsoOHP, { backgroundColor: silhouetteColor }]} />
+        <View style={silhouetteStyles.legRow}>
+          <View style={[silhouetteStyles.legStraight, { backgroundColor: silhouetteColor }]} />
+          <View style={[silhouetteStyles.legStraight, { backgroundColor: silhouetteColor }]} />
+        </View>
+      </View>
+      <Text style={[silhouetteStyles.label, { color: textColor }]}>{label}</Text>
+    </View>
+  );
+}
+
+const silhouetteStyles = StyleSheet.create({
+  wrapper: {
+    position: 'absolute',
+    right: 8,
+    top: 4,
+    alignItems: 'center',
+    gap: 2,
+  },
+  figure: {
+    alignItems: 'center',
+    gap: 1,
+  },
+  benchFigure: {
+    alignItems: 'center',
+    gap: 2,
+  },
+  head: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  torsoSquat: {
+    width: 12,
+    height: 14,
+    borderRadius: 2,
+    transform: [{ rotate: '5deg' }],
+  },
+  torsoDL: {
+    width: 12,
+    height: 16,
+    borderRadius: 2,
+    transform: [{ rotate: '25deg' }],
+  },
+  torsoOHP: {
+    width: 12,
+    height: 16,
+    borderRadius: 2,
+  },
+  legRow: {
+    flexDirection: 'row',
+    gap: 3,
+  },
+  legBent: {
+    width: 5,
+    height: 10,
+    borderRadius: 2,
+    transform: [{ rotate: '15deg' }],
+  },
+  legStraight: {
+    width: 5,
+    height: 14,
+    borderRadius: 2,
+  },
+  benchBody: {
+    width: 28,
+    height: 8,
+    borderRadius: 3,
+  },
+  benchArm: {
+    width: 4,
+    height: 14,
+    borderRadius: 2,
+  },
+  armUp: {
+    width: 4,
+    height: 10,
+    borderRadius: 2,
+  },
+  label: {
+    fontSize: 8,
+    fontWeight: '800' as const,
+    letterSpacing: 1,
+  },
+});
+
+export default React.memo(function BarbellVisual({ plates, unit, lift = 'squat' }: BarbellVisualProps) {
   const expanded = expandPlates(plates);
   const totalPerSide = expanded.length;
 
@@ -169,6 +310,7 @@ export default React.memo(function BarbellVisual({ plates, unit }: BarbellVisual
 
   return (
     <View style={styles.container}>
+      <LiftSilhouette lift={lift} />
       <View style={[styles.barbell, { transform: [{ scale: barbellScale }], height: compact ? 90 : 108 }]}>
         <View style={styles.collar} />
         <View style={[styles.leftPlates, { gap: plateGap }]}>

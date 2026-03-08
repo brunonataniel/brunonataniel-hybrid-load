@@ -2,6 +2,8 @@ export type UnitSystem = 'lbs' | 'kg';
 
 export type FatigueType = 'combat' | 'stairs' | 'hiit' | 'swim' | 'running';
 
+export type LiftType = 'squat' | 'bench' | 'deadlift' | 'overhead';
+
 export type FatigueState = 'fresh' | 'standard' | 'endurance';
 
 const BAR_WEIGHT_LBS = 45;
@@ -37,13 +39,32 @@ const FATIGUE_REDUCTIONS: Record<FatigueType, number> = {
 
 const MAX_FATIGUE_REDUCTION = 0.30;
 
-export function computeTotalReduction(activeFatigues: FatigueType[]): number {
-  const total = activeFatigues.reduce((sum, f) => sum + (FATIGUE_REDUCTIONS[f] ?? 0), 0);
+const UPPER_BODY_SCALING: Record<FatigueType, number> = {
+  combat: 0.60,
+  stairs: 0.30,
+  hiit: 0.30,
+  swim: 0.30,
+  running: 0.30,
+};
+
+function getLiftScaling(lift: LiftType, fatigueType: FatigueType): number {
+  if (lift === 'squat' || lift === 'deadlift') {
+    return 1.0;
+  }
+  return UPPER_BODY_SCALING[fatigueType] ?? 1.0;
+}
+
+export function computeTotalReduction(activeFatigues: FatigueType[], lift: LiftType = 'squat'): number {
+  const total = activeFatigues.reduce((sum, f) => {
+    const base = FATIGUE_REDUCTIONS[f] ?? 0;
+    const scaling = getLiftScaling(lift, f);
+    return sum + (base * scaling);
+  }, 0);
   return Math.min(total, MAX_FATIGUE_REDUCTION);
 }
 
-export function getFatigueReductionPercent(activeFatigues: FatigueType[]): number {
-  return Math.round(computeTotalReduction(activeFatigues) * 100);
+export function getFatigueReductionPercent(activeFatigues: FatigueType[], lift: LiftType = 'squat'): number {
+  return Math.round(computeTotalReduction(activeFatigues, lift) * 100);
 }
 
 function getRoundingIncrement(unit: UnitSystem): number {
@@ -62,9 +83,10 @@ export function calculatePlates(
   oneRepMax: number,
   targetPercent: number,
   activeFatigues: FatigueType[],
-  unit: UnitSystem = 'lbs'
+  unit: UnitSystem = 'lbs',
+  lift: LiftType = 'squat'
 ): CalculationResult {
-  const totalReduction = computeTotalReduction(activeFatigues);
+  const totalReduction = computeTotalReduction(activeFatigues, lift);
   const fatigueReductionPercent = Math.round(totalReduction * 100);
 
   const effectivePercent = Math.max(0, targetPercent - fatigueReductionPercent);
