@@ -363,17 +363,6 @@ export default function LandingScreen() {
             );
           })}
 
-          <TouchableOpacity
-            style={styles.roadmapCta}
-            activeOpacity={0.85}
-            onPress={() => {
-              // Scroll to waitlist section
-            }}
-            testID="roadmap-claim-button"
-          >
-            <Text style={styles.roadmapCtaText}>CLAIM LIFETIME ACCESS</Text>
-            <ChevronRight size={16} color="#000000" />
-          </TouchableOpacity>
         </View>
 
         <View style={styles.waitlistSection}>
@@ -414,7 +403,7 @@ export default function LandingScreen() {
               {submitState === 'loading' ? (
                 <ActivityIndicator size="small" color="#000000" />
               ) : (
-                <Text style={styles.claimButtonText}>CLAIM</Text>
+                <Text style={styles.claimButtonText}>CLAIM LIFETIME ACCESS</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -765,7 +754,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.1,
   },
   inputRow: {
-    flexDirection: 'row',
     gap: 10,
     marginBottom: 10,
   },
@@ -784,10 +772,10 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.accent,
     borderRadius: 12,
     paddingHorizontal: 24,
-    paddingVertical: 14,
+    paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: 90,
+    width: '100%',
   },
   claimButtonDisabled: {
     opacity: 0.7,
@@ -870,7 +858,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   roadmapSection: {
-    marginBottom: 40,
+    marginBottom: 16,
   },
   roadmapBadgeRow: {
     alignItems: 'center' as const,
