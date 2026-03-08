@@ -43,18 +43,18 @@ const ROADMAP_FEATURES = [
 const VALUE_PROPS = [
   {
     icon: Crosshair,
-    title: 'NEURAL DRIVE SCALING',
-    description: 'Most apps treat you like a battery. We treat you like a nervous system.',
+    title: 'THE NEURAL GAP',
+    description: 'Standard math ignores the 10km run you did this morning. We don\'t. Experience the first engine that accounts for Systemic Fatigue.',
   },
   {
     icon: Target,
-    title: 'LOCALIZED BIOMECHANICS',
-    description: 'Stop stripping weight from the wrong lifts. Our engine knows where your fatigue is hiding.',
+    title: 'LOCALIZED SCALING',
+    description: 'A BJJ session kills your Squat, but your Bench is still prime. Our engine knows exactly which muscle groups are compromised.',
   },
   {
     icon: Users,
     title: 'GENESIS 50 ACCESS',
-    description: "The first 50 testers aren't just users. They are the architects. 48 spots remain.",
+    description: "48 spots remain. Joining the Beta doesn't make you a user—it makes you an architect of the next standard in performance.",
   },
 ];
 
@@ -247,12 +247,17 @@ export default function LandingScreen() {
             </View>
           </View>
 
+          <View style={styles.warningStrip}>
+            <View style={styles.warningDot} />
+            <Text style={styles.warningLabel}>SYSTEM ADVISORY</Text>
+          </View>
+
           <Text style={styles.heroHeadline}>
-            YOUR 1-REP{'\n'}MAX IS{'\n'}A <Text style={styles.heroAccent}>LIE.</Text>
+            STOP LIFTING{' '}ON{' '}<Text style={styles.heroAccent}>YESTERDAY'S{' '}MATH.</Text>
           </Text>
 
           <Text style={styles.heroSubtext}>
-            Every calculator gives you a number. None of them know what you did yesterday. HybridLoad is the first engine that scales your training load to your actual nervous system state.
+            Your body isn't a constant. HybridLoad is the first fatigue engine that scales your load based on your actual CNS drain.
           </Text>
 
           <Animated.View style={[
@@ -598,11 +603,36 @@ const styles = StyleSheet.create({
     color: Colors.accent,
     letterSpacing: 2,
   },
+  warningStrip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 18,
+    backgroundColor: 'rgba(255, 60, 60, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 60, 60, 0.2)',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    alignSelf: 'flex-start',
+  },
+  warningDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FF3C3C',
+  },
+  warningLabel: {
+    fontSize: 9,
+    fontWeight: '800' as const,
+    color: '#FF3C3C',
+    letterSpacing: 2,
+  },
   heroHeadline: {
-    fontSize: 52,
+    fontSize: 46,
     fontWeight: '900' as const,
     color: '#FFFFFF',
-    lineHeight: 56,
+    lineHeight: 52,
     letterSpacing: -1.5,
     marginBottom: 20,
   },
