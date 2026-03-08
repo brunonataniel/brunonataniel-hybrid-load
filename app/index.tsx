@@ -184,7 +184,7 @@ export default function LandingScreen() {
           </Text>
 
           <Text style={styles.heroSubtext}>
-            Stop guessing your recovery. HybridLoad scales{'\n'}fatigue based on your specific lift, separating CNS{'\n'}drain from local muscular fatigue.{'\n'}High-performance math for the hybrid athlete.
+            Stop guessing your recovery. HybridLoad scales fatigue based on your specific lift — separating CNS drain from local muscular fatigue. High-performance math for the hybrid athlete.
           </Text>
 
           <View style={styles.statsRow}>
