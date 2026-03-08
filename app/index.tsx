@@ -63,40 +63,35 @@ const FEATURES = [
     icon: Zap,
     title: 'HIIT',
     subtitle: 'Sprints',
-    lowerRange: '-5% to -10%',
-    upperRange: '-6% to -10%',
+    range: '-3% to -10%',
     description: 'Accounts for CNS fatigue from high-intensity work',
   },
   {
     icon: Swords,
     title: 'COMBAT',
     subtitle: 'BJJ / MMA / Full-Body Contact',
-    lowerRange: '-4% to -15%',
-    upperRange: '-5% to -15%',
+    range: '-4% to -15%',
     description: 'Auto-adjusts load after grappling sessions',
   },
   {
     icon: Activity,
     title: 'RUNNING',
     subtitle: 'Endurance / Zone 2',
-    lowerRange: '-2% to -10%',
-    upperRange: '-2% to -3%',
+    range: '-2% to -10%',
     description: 'Factors in lower body fatigue from distance runs',
   },
   {
     icon: Footprints,
     title: 'STAIRS',
     subtitle: 'Stairmaster',
-    lowerRange: '-1% to -5%',
-    upperRange: '-1% to -3%',
+    range: '-1% to -5%',
     description: 'Compensates for quad and glute pre-fatigue',
   },
   {
     icon: Waves,
     title: 'SWIM',
     subtitle: 'Laps',
-    lowerRange: '-1% to -5%',
-    upperRange: '-2% to -10%',
+    range: '-1% to -10%',
     description: 'Minimal impact on lifting — smart micro-adjustment',
   },
 ];
@@ -381,15 +376,8 @@ export default function LandingScreen() {
                   <View style={styles.featureIconWrap}>
                     <Icon size={20} color={Colors.accent} />
                   </View>
-                  <View style={styles.reductionBadgeStack}>
-                    <View style={styles.reductionBadge}>
-                      <Text style={styles.reductionCategoryLabel}>LOWER</Text>
-                      <Text style={styles.reductionText}>{feature.lowerRange}</Text>
-                    </View>
-                    <View style={styles.reductionBadge}>
-                      <Text style={styles.reductionCategoryLabel}>UPPER</Text>
-                      <Text style={styles.reductionText}>{feature.upperRange}</Text>
-                    </View>
+                  <View style={styles.reductionBadge}>
+                    <Text style={styles.reductionText}>{feature.range}</Text>
                   </View>
                 </View>
                 <Text style={styles.featureTitle}>{feature.title}</Text>
@@ -906,24 +894,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  reductionBadgeStack: {
-    gap: 4,
-    alignItems: 'flex-end' as const,
-  },
   reductionBadge: {
     backgroundColor: '#CCFF00',
     borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    gap: 5,
-  },
-  reductionCategoryLabel: {
-    color: 'rgba(0,0,0,0.45)',
-    fontSize: 8,
-    fontWeight: '800' as const,
-    letterSpacing: 0.8,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
   },
   reductionText: {
     color: '#000000',
