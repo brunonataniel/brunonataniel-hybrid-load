@@ -98,18 +98,33 @@ const FEATURES = [
 ];
 
 function AnimatedWeightDisplay({ animValue }: { animValue: Animated.Value }) {
-  const [displayVal, setDisplayVal] = useState<string>('100');
+  const textRef = useRef<any>(null);
+  const lastValue = useRef<string>('100');
+
+  const updateText = useCallback((text: string) => {
+    if (text === lastValue.current) return;
+    lastValue.current = text;
+    const node = textRef.current;
+    if (!node) return;
+    if (typeof node.setNativeProps === 'function') {
+      node.setNativeProps({ text });
+    }
+    if (typeof document !== 'undefined' && node instanceof HTMLElement) {
+      node.textContent = text;
+    }
+  }, []);
 
   useEffect(() => {
     const id = animValue.addListener(({ value }) => {
       const weight = 100 - (value * 17.5);
       const rounded = Math.round(weight * 2) / 2;
-      setDisplayVal(rounded % 1 === 0 ? String(rounded) : rounded.toFixed(1));
+      const text = rounded % 1 === 0 ? String(rounded) : rounded.toFixed(1);
+      updateText(text);
     });
     return () => animValue.removeListener(id);
-  }, [animValue]);
+  }, [animValue, updateText]);
 
-  return <Text style={compStyles.hybridWeightText}>{displayVal}</Text>;
+  return <Text ref={textRef} style={compStyles.hybridWeightText}>100</Text>;
 }
 
 export default function LandingScreen() {
