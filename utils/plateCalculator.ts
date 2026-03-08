@@ -39,6 +39,10 @@ const FATIGUE_REDUCTIONS: Record<FatigueType, number> = {
 
 const MAX_FATIGUE_REDUCTION = 0.30;
 
+const SYSTEMIC_OVERLAY_FACTOR = 0.20;
+
+const LOCAL_FATIGUE_TYPES: FatigueType[] = ['running', 'stairs'];
+
 const UPPER_BODY_SCALING: Record<FatigueType, number> = {
   combat: 0.60,
   stairs: 0.30,
@@ -55,12 +59,39 @@ function getLiftScaling(lift: LiftType, fatigueType: FatigueType): number {
 }
 
 export function computeTotalReduction(activeFatigues: FatigueType[], lift: LiftType = 'squat'): number {
-  const total = activeFatigues.reduce((sum, f) => {
-    const base = FATIGUE_REDUCTIONS[f] ?? 0;
-    const scaling = getLiftScaling(lift, f);
-    return sum + (base * scaling);
-  }, 0);
-  return Math.min(total, MAX_FATIGUE_REDUCTION);
+  if (activeFatigues.length === 0) return 0;
+
+  if (activeFatigues.length === 1) {
+    const base = FATIGUE_REDUCTIONS[activeFatigues[0]] ?? 0;
+    const scaling = getLiftScaling(lift, activeFatigues[0]);
+    return Math.min(base * scaling, MAX_FATIGUE_REDUCTION);
+  }
+
+  const scaled = activeFatigues.map(f => ({
+    type: f,
+    reduction: (FATIGUE_REDUCTIONS[f] ?? 0) * getLiftScaling(lift, f),
+    isLocal: LOCAL_FATIGUE_TYPES.includes(f),
+  }));
+
+  scaled.sort((a, b) => {
+    if (a.isLocal !== b.isLocal) return a.isLocal ? -1 : 1;
+    return b.reduction - a.reduction;
+  });
+
+  let remainingCapacity = 1.0;
+
+  remainingCapacity *= (1 - scaled[0].reduction);
+  console.log(`[SystemicEngine] Primary: ${scaled[0].type} (-${(scaled[0].reduction * 100).toFixed(1)}%) → capacity: ${(remainingCapacity * 100).toFixed(1)}%`);
+
+  for (let i = 1; i < scaled.length; i++) {
+    const systemicRate = scaled[i].reduction * SYSTEMIC_OVERLAY_FACTOR;
+    remainingCapacity *= (1 - systemicRate);
+    console.log(`[SystemicEngine] Overlay: ${scaled[i].type} (${(scaled[i].reduction * 100).toFixed(1)}% × ${SYSTEMIC_OVERLAY_FACTOR} = -${(systemicRate * 100).toFixed(1)}%) → capacity: ${(remainingCapacity * 100).toFixed(1)}%`);
+  }
+
+  const totalReduction = 1 - remainingCapacity;
+  console.log(`[SystemicEngine] Total compounded reduction: -${(totalReduction * 100).toFixed(1)}%`);
+  return Math.min(totalReduction, MAX_FATIGUE_REDUCTION);
 }
 
 export function getFatigueReductionPercent(activeFatigues: FatigueType[], lift: LiftType = 'squat'): number {
