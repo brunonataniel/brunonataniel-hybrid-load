@@ -15,11 +15,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
-import { Weight, RotateCcw, Info, X, Lock } from 'lucide-react-native';
+import { RotateCcw, Info, X, Lock, Bell } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
-import { calculatePlates, FatigueType, getPlateColor, getPlateLabel, PlateBreakdown, UnitSystem, getBarWeight, getFatigueReductionPercent } from '@/utils/plateCalculator';
-import BarbellVisual from '@/components/BarbellVisual';
+import { calculatePlates, FatigueType, UnitSystem, getFatigueReductionPercent } from '@/utils/plateCalculator';
 import FatigueCheckIn from '@/components/FatigueToggle';
 import LiftSelector from '@/components/LiftSelector';
 import { useApp } from '@/providers/AppProvider';
@@ -147,24 +146,6 @@ const tooltipStyles = StyleSheet.create({
   },
 });
 
-function PlateRow({ plate, unit }: { plate: PlateBreakdown; unit: UnitSystem }) {
-  const color = getPlateColor(plate.weight, unit);
-  const unitLabel = unit === 'lbs' ? 'lb' : 'kg';
-  const isLargeMultiplier = plate.count >= 100;
-  return (
-    <View style={styles.plateRow}>
-      <View style={styles.plateChipCountGroup}>
-        <View style={[styles.plateChip, { backgroundColor: color }]}>
-          <Text style={[styles.plateChipText, unit === 'kg' && plate.weight === 5 && { color: '#1A1A1A' }]}>{getPlateLabel(plate.weight)}</Text>
-        </View>
-        <Text style={[styles.plateCount, isLargeMultiplier && styles.plateCountSmall]}>
-          <Text style={styles.plateCountX}>×</Text>{plate.count}
-        </Text>
-      </View>
-      <Text style={styles.plateLabel}>{plate.weight} {unitLabel} each side</Text>
-    </View>
-  );
-}
 
 function useCountingAnimation(targetValue: number, duration: number = 350) {
   const [displayValue, setDisplayValue] = useState<number>(targetValue);
@@ -206,13 +187,13 @@ function useCountingAnimation(targetValue: number, duration: number = 350) {
 }
 
 export default function CalculatorScreen() {
-  const { maxLift, unit, updateMaxLift, updateUnit, addHistoryEntry, selectedLift, updateLift, isProUnlocked } = useApp();
+  const { maxLift, unit, updateMaxLift, updateUnit, selectedLift, updateLift } = useApp();
   const [showProModal, setShowProModal] = useState<boolean>(false);
   const router = useRouter();
   const [targetPercent, setTargetPercent] = useState<number>(80);
   const [activeFatigues, setActiveFatigues] = useState<FatigueType[]>([]);
   const weightAnim = useRef(new Animated.Value(1)).current;
-  const lastLoggedRef = useRef<string>('');
+
   const cnsOpacity = useRef(new Animated.Value(0)).current;
 
   const numericMax = useMemo(() => {
@@ -238,25 +219,7 @@ export default function CalculatorScreen() {
     }).start();
   }, [totalReductionPercent, cnsOpacity]);
 
-  useEffect(() => {
-    if (numericMax <= 0) return;
-    const fatigueKey = [...activeFatigues].sort().join(',');
-    const key = `${numericMax}-${targetPercent}-${fatigueKey}-${unit}-${result.finalWeight}`;
-    if (key === lastLoggedRef.current) return;
-    lastLoggedRef.current = key;
 
-    const timer = setTimeout(() => {
-      addHistoryEntry({
-        oneRepMax: numericMax,
-        targetPercent,
-        fatigueTypes: activeFatigues,
-        unit,
-        finalWeight: result.finalWeight,
-        liftType: selectedLift,
-      });
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, [numericMax, targetPercent, activeFatigues, unit, result.finalWeight, addHistoryEntry, selectedLift]);
 
   const handlePercentChange = useCallback((pct: number) => {
     if (Platform.OS !== 'web') {
@@ -469,60 +432,40 @@ export default function CalculatorScreen() {
               selectedLift={selectedLift}
             />
 
-            {isProUnlocked ? (
-              <>
-                <BarbellVisual plates={result.plates} unit={unit} lift={selectedLift} />
-
-                {result.plates.length > 0 ? (
-                  <View style={styles.plateBreakdown}>
-                    <Text style={styles.sectionLabel}>PLATES PER SIDE</Text>
-                    <View style={styles.plateList}>
-                      {result.plates.map((plate) => (
-                        <PlateRow key={plate.weight} plate={plate} unit={unit} />
-                      ))}
-                    </View>
-                    <Text style={styles.barNote}>Bar: {result.barWeight} {unit}</Text>
-                  </View>
-                ) : (
-                  <View style={styles.emptyState}>
-                    <Weight size={28} color={Colors.textTertiary} />
-                    <Text style={styles.emptyText}>
-                      {numericMax === 0 ? 'Enter your 1-rep max' : `Just the bar — ${getBarWeight(unit)} ${unit}`}
-                    </Text>
-                  </View>
-                )}
-              </>
-            ) : (
-              <View style={styles.lockedSection}>
-                <View style={styles.lockedPreview}>
-                  <View style={styles.blurredBarbell}>
-                    <View style={styles.blurCollar} />
-                    <View style={styles.blurPlate} />
-                    <View style={styles.blurPlateSmall} />
-                    <View style={styles.blurSleeve} />
-                    <View style={styles.blurBar} />
-                    <View style={styles.blurSleeve} />
-                    <View style={styles.blurPlateSmall} />
-                    <View style={styles.blurPlate} />
-                    <View style={styles.blurCollar} />
-                  </View>
-                  <View style={styles.lockOverlay}>
-                    <View style={styles.lockIconWrap}>
-                      <Lock size={28} color={Colors.accent} strokeWidth={2} />
-                    </View>
+            <View style={styles.lockedSection}>
+              <View style={styles.lockedPreview}>
+                <View style={styles.blurredBarbell}>
+                  <View style={styles.blurCollar} />
+                  <View style={styles.blurPlate} />
+                  <View style={styles.blurPlateSmall} />
+                  <View style={styles.blurSleeve} />
+                  <View style={styles.blurBar} />
+                  <View style={styles.blurSleeve} />
+                  <View style={styles.blurPlateSmall} />
+                  <View style={styles.blurPlate} />
+                  <View style={styles.blurCollar} />
+                </View>
+                <View style={styles.lockOverlay}>
+                  <View style={styles.lockIconWrap}>
+                    <Lock size={28} color={Colors.accent} strokeWidth={2} />
                   </View>
                 </View>
-                <Text style={styles.lockedText}>See your exact plate setup</Text>
-                <TouchableOpacity
-                  testID="unlock-pro-plates"
-                  style={styles.unlockButton}
-                  onPress={() => setShowProModal(true)}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.unlockButtonText}>UNLOCK PRO</Text>
-                </TouchableOpacity>
               </View>
-            )}
+              <View style={styles.proBadge}>
+                <Text style={styles.proBadgeText}>PRO</Text>
+              </View>
+              <Text style={styles.lockedText}>See your exact plate setup</Text>
+              <Text style={styles.comingSoonText}>Coming soon</Text>
+              <TouchableOpacity
+                testID="notify-pro-plates"
+                style={styles.notifyButton}
+                onPress={() => setShowProModal(true)}
+                activeOpacity={0.8}
+              >
+                <Bell size={14} color="#0D0D0D" strokeWidth={2.5} />
+                <Text style={styles.notifyButtonText}>NOTIFY ME</Text>
+              </TouchableOpacity>
+            </View>
 
             <View style={styles.legalFooter}>
               <View style={styles.legalDivider} />
@@ -758,76 +701,7 @@ const styles = StyleSheet.create({
     color: Colors.accent,
     fontWeight: '700' as const,
   },
-  plateBreakdown: {
-    gap: 8,
-  },
-  plateList: {
-    backgroundColor: Colors.surface,
-    borderRadius: 14,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.04)',
-  },
-  plateRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 13,
-    paddingHorizontal: 20,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(255,255,255,0.06)',
-    gap: 14,
-  },
-  plateChipCountGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    minWidth: 78,
-  },
-  plateChip: {
-    width: 38,
-    height: 26,
-    borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  plateChipText: {
-    fontSize: 11,
-    fontWeight: '800' as const,
-    color: '#FFFFFF',
-  },
-  plateCount: {
-    fontSize: 18,
-    fontWeight: '600' as const,
-    color: Colors.textPrimary,
-  },
-  plateCountSmall: {
-    fontSize: 15,
-  },
-  plateCountX: {
-    fontSize: 14,
-    fontWeight: '500' as const,
-    color: Colors.textSecondary,
-  },
-  plateLabel: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    flex: 1,
-  },
-  barNote: {
-    fontSize: 13,
-    color: Colors.textTertiary,
-    textAlign: 'center',
-    marginTop: 4,
-  },
-  emptyState: {
-    alignItems: 'center',
-    gap: 10,
-    paddingVertical: 24,
-  },
-  emptyText: {
-    fontSize: 14,
-    color: Colors.textTertiary,
-  },
+
   legalFooter: {
     marginTop: 12,
     paddingBottom: 8,
@@ -930,14 +804,36 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center' as const,
   },
-  unlockButton: {
+  proBadge: {
+    backgroundColor: 'rgba(204, 255, 0, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(204, 255, 0, 0.25)',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+  },
+  proBadgeText: {
+    fontSize: 11,
+    fontWeight: '800' as const,
+    letterSpacing: 1.5,
+    color: Colors.accent,
+  },
+  comingSoonText: {
+    fontSize: 12,
+    fontWeight: '500' as const,
+    color: Colors.textTertiary,
+    letterSpacing: 0.3,
+  },
+  notifyButton: {
+    flexDirection: 'row' as const,
     backgroundColor: Colors.accent,
     borderRadius: 12,
     paddingVertical: 14,
-    paddingHorizontal: 32,
+    paddingHorizontal: 28,
     alignItems: 'center' as const,
+    gap: 8,
   },
-  unlockButtonText: {
+  notifyButtonText: {
     fontSize: 13,
     fontWeight: '800' as const,
     letterSpacing: 1.5,

@@ -11,24 +11,26 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
-import { X, Lock } from 'lucide-react-native';
+import { X, Bell } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
-import { useApp } from '@/providers/AppProvider';
 
-interface ProUnlockModalProps {
+interface ProNotifyModalProps {
   visible: boolean;
   onClose: () => void;
 }
 
-export default function ProUnlockModal({ visible, onClose }: ProUnlockModalProps) {
-  const { unlockPro } = useApp();
+export default function ProUnlockModal({ visible, onClose }: ProNotifyModalProps) {
+  const router = useRouter();
   const [email, setEmail] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [confirmed, setConfirmed] = useState<boolean>(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const handleShow = useCallback(() => {
+    setConfirmed(false);
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 200,
@@ -52,18 +54,23 @@ export default function ProUnlockModal({ visible, onClose }: ProUnlockModalProps
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 600));
-      unlockPro();
+      console.log('[ProNotify] Email captured:', trimmed);
       setEmail('');
-      onClose();
+      setConfirmed(true);
+      setTimeout(() => {
+        onClose();
+        setTimeout(() => setConfirmed(false), 300);
+      }, 2200);
     } catch {
       setError('Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
-  }, [email, unlockPro, onClose]);
+  }, [email, onClose]);
 
   const handleClose = useCallback(() => {
     setError('');
+    setConfirmed(false);
     onClose();
   }, [onClose]);
 
@@ -90,53 +97,74 @@ export default function ProUnlockModal({ visible, onClose }: ProUnlockModalProps
                 <X size={18} color={Colors.textSecondary} />
               </TouchableOpacity>
 
-              <View style={styles.lockIconWrap}>
-                <Lock size={24} color={Colors.accent} strokeWidth={2} />
-              </View>
+              {confirmed ? (
+                <View style={styles.confirmWrap}>
+                  <View style={styles.confirmIconWrap}>
+                    <Bell size={24} color={Colors.accent} strokeWidth={2} />
+                  </View>
+                  <Text style={styles.confirmText}>
+                    You're on the list. We'll let you know when Pro goes live.
+                  </Text>
+                </View>
+              ) : (
+                <>
+                  <View style={styles.bellIconWrap}>
+                    <Bell size={24} color={Colors.accent} strokeWidth={2} />
+                  </View>
 
-              <Text style={styles.header}>GET EARLY PRO ACCESS</Text>
-              <Text style={styles.description}>
-                Sign up to unlock the plate visualizer, training history, and upcoming Pro features.
-              </Text>
+                  <Text style={styles.header}>PRO IS COMING</Text>
+                  <Text style={styles.description}>
+                    Be the first to know when Pro goes live. Get access to the plate visualizer, training history, and more.
+                  </Text>
 
-              <View style={styles.inputWrap}>
-                <TextInput
-                  testID="pro-email-input"
-                  style={styles.input}
-                  value={email}
-                  onChangeText={(t) => { setEmail(t); setError(''); }}
-                  placeholder="your@email.com"
-                  placeholderTextColor={Colors.textTertiary}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  selectionColor={Colors.accent}
-                  editable={!isSubmitting}
-                  {...(Platform.OS === 'web' ? { outlineStyle: 'none' as any } : {})}
-                />
-              </View>
+                  <View style={styles.inputWrap}>
+                    <TextInput
+                      testID="pro-email-input"
+                      style={styles.input}
+                      value={email}
+                      onChangeText={(t) => { setEmail(t); setError(''); }}
+                      placeholder="your@email.com"
+                      placeholderTextColor={Colors.textTertiary}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      selectionColor={Colors.accent}
+                      editable={!isSubmitting}
+                      {...(Platform.OS === 'web' ? { outlineStyle: 'none' as any } : {})}
+                    />
+                  </View>
 
-              {error.length > 0 && (
-                <Text style={styles.errorText}>{error}</Text>
+                  {error.length > 0 && (
+                    <Text style={styles.errorText}>{error}</Text>
+                  )}
+
+                  <TouchableOpacity
+                    testID="pro-submit-button"
+                    style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
+                    onPress={handleSubmit}
+                    activeOpacity={0.8}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <ActivityIndicator size="small" color="#0D0D0D" />
+                    ) : (
+                      <Text style={styles.submitText}>NOTIFY ME</Text>
+                    )}
+                  </TouchableOpacity>
+
+                  <Text style={styles.consent}>
+                    By clicking 'Notify Me', you agree to our{' '}
+                    <Text style={styles.consentLink} onPress={() => { handleClose(); router.push('/privacy'); }}>
+                      Privacy Policy (EN/DE)
+                    </Text>
+                    . / Mit Klick auf 'Notify Me' stimmst du unserer{' '}
+                    <Text style={styles.consentLink} onPress={() => { handleClose(); router.push('/privacy'); }}>
+                      Datenschutzerklärung
+                    </Text>
+                    {' '}zu.
+                  </Text>
+                </>
               )}
-
-              <TouchableOpacity
-                testID="pro-submit-button"
-                style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
-                onPress={handleSubmit}
-                activeOpacity={0.8}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <ActivityIndicator size="small" color="#0D0D0D" />
-                ) : (
-                  <Text style={styles.submitText}>JOIN THE BETA</Text>
-                )}
-              </TouchableOpacity>
-
-              <Text style={styles.consent}>
-                By clicking 'Join the Beta', you agree to our Privacy Policy (EN/DE). / Mit Klick auf 'Join the Beta' stimmst du unserer Datenschutzerklärung zu.
-              </Text>
             </View>
           </Pressable>
         </Animated.View>
@@ -183,7 +211,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  lockIconWrap: {
+  bellIconWrap: {
     width: 52,
     height: 52,
     borderRadius: 14,
@@ -252,6 +280,33 @@ const styles = StyleSheet.create({
     fontSize: 10,
     lineHeight: 15,
     color: Colors.textTertiary,
+    textAlign: 'center',
+    paddingHorizontal: 8,
+  },
+  consentLink: {
+    color: Colors.accent,
+    textDecorationLine: 'underline',
+  },
+  confirmWrap: {
+    alignItems: 'center',
+    paddingVertical: 16,
+    gap: 16,
+  },
+  confirmIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(204, 255, 0, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(204, 255, 0, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  confirmText: {
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: '500' as const,
+    color: Colors.textPrimary,
     textAlign: 'center',
     paddingHorizontal: 8,
   },
