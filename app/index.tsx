@@ -13,9 +13,32 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Swords, Zap, Activity, Waves, Footprints, ChevronRight, Shield, Building2, Mail, Brain, RefreshCw, ShieldCheck } from 'lucide-react-native';
+import { Swords, Zap, Activity, Waves, Footprints, ChevronRight, Shield, Building2, Mail, Brain, RefreshCw, ShieldCheck, BarChart3, Gauge, ShieldHalf, Dumbbell } from 'lucide-react-native';
 import { useWindowDimensions } from 'react-native';
 import { Colors } from '@/constants/colors';
+
+const ROADMAP_FEATURES = [
+  {
+    icon: BarChart3,
+    title: 'THE PERFORMANCE ARCHIVE',
+    description: 'Stop guessing. Track your fatigue trends over weeks and months to identify exactly how your endurance blocks affect your strength peaks.',
+  },
+  {
+    icon: Gauge,
+    title: 'RPE-BASED PRECISION',
+    description: "Integrate 'Rate of Perceived Exertion' into the engine. The app combines your activity data with your real-time 'feel' for the ultimate load recommendation.",
+  },
+  {
+    icon: ShieldHalf,
+    title: 'VOLUME & SET OPTIMIZATION',
+    description: "We don't just change the weight. The engine suggests set and rep adjustments to prevent overtraining and CNS burnout on high-fatigue days.",
+  },
+  {
+    icon: Dumbbell,
+    title: 'CUSTOM EXERCISE LIBRARY',
+    description: 'Go beyond the Big 4. Add custom lifts and accessory movements to your dashboard for localized fatigue scaling across your entire split.',
+  },
+];
 
 const VALUE_PROPS = [
   {
@@ -311,6 +334,47 @@ export default function LandingScreen() {
 
 
         </Animated.View>
+
+        <View style={styles.roadmapSection}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionLine} />
+            <Text style={styles.sectionTitle}>BETA ROADMAP</Text>
+            <View style={styles.sectionLine} />
+          </View>
+
+          <View style={styles.roadmapBadgeRow}>
+            <View style={styles.comingSoonBadge}>
+              <Text style={styles.comingSoonText}>COMING SOON TO BETA</Text>
+            </View>
+          </View>
+
+          {ROADMAP_FEATURES.map((feature) => {
+            const Icon = feature.icon;
+            return (
+              <View key={feature.title} style={styles.roadmapCard}>
+                <View style={styles.roadmapIconWrap}>
+                  <Icon size={20} color={Colors.accent} />
+                </View>
+                <View style={styles.roadmapContent}>
+                  <Text style={styles.roadmapTitle}>{feature.title}</Text>
+                  <Text style={styles.roadmapDesc}>{feature.description}</Text>
+                </View>
+              </View>
+            );
+          })}
+
+          <TouchableOpacity
+            style={styles.roadmapCta}
+            activeOpacity={0.85}
+            onPress={() => {
+              // Scroll to waitlist section
+            }}
+            testID="roadmap-claim-button"
+          >
+            <Text style={styles.roadmapCtaText}>CLAIM LIFETIME ACCESS</Text>
+            <ChevronRight size={16} color="#000000" />
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.waitlistSection}>
           <View style={styles.waitlistHeader}>
@@ -804,6 +868,80 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
     opacity: 0.6,
     marginBottom: 6,
+  },
+  roadmapSection: {
+    marginBottom: 40,
+  },
+  roadmapBadgeRow: {
+    alignItems: 'center' as const,
+    marginBottom: 20,
+  },
+  comingSoonBadge: {
+    backgroundColor: 'rgba(204, 255, 0, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(204, 255, 0, 0.18)',
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+  },
+  comingSoonText: {
+    fontSize: 10,
+    fontWeight: '700' as const,
+    color: Colors.accent,
+    letterSpacing: 1.5,
+  },
+  roadmapCard: {
+    flexDirection: 'row' as const,
+    backgroundColor: Colors.surface,
+    borderRadius: 14,
+    padding: 18,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#27272a',
+    borderLeftWidth: 2,
+    borderLeftColor: 'rgba(204, 255, 0, 0.3)',
+  },
+  roadmapIconWrap: {
+    width: 42,
+    height: 42,
+    borderRadius: 11,
+    backgroundColor: Colors.accentDim,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    marginRight: 14,
+  },
+  roadmapContent: {
+    flex: 1,
+  },
+  roadmapTitle: {
+    fontSize: 13,
+    fontWeight: '800' as const,
+    color: '#FFFFFF',
+    letterSpacing: 1,
+    marginBottom: 6,
+  },
+  roadmapDesc: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    lineHeight: 19,
+  },
+  roadmapCta: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    backgroundColor: Colors.accent,
+    borderRadius: 14,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    width: '100%' as const,
+    gap: 8,
+    marginTop: 14,
+  },
+  roadmapCtaText: {
+    fontSize: 14,
+    fontWeight: '800' as const,
+    color: '#000000',
+    letterSpacing: 1.5,
   },
   disclaimerTextEn: {
     fontSize: 10,
