@@ -417,15 +417,10 @@ export default function LandingScreen() {
         <View style={styles.roadmapSection}>
           <View style={styles.sectionHeader}>
             <View style={styles.sectionLine} />
-            <Text style={styles.sectionTitle}>BETA ROADMAP</Text>
+            <Text style={styles.sectionTitle}>WHAT'S NEXT</Text>
             <View style={styles.sectionLine} />
           </View>
 
-          <View style={styles.roadmapBadgeRow}>
-            <View style={styles.comingSoonBadge}>
-              <Text style={styles.comingSoonText}>COMING SOON TO BETA</Text>
-            </View>
-          </View>
 
           {ROADMAP_FEATURES.map((feature) => {
             const Icon = feature.icon;
