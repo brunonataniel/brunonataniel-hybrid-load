@@ -478,7 +478,6 @@ export default function LandingScreen() {
           </View>
 
           <Text style={styles.waitlistDesc}>Get notified when Pro features like the Performance Archive, RPE Precision, and Volume Optimization go live.</Text>
-          <Text style={styles.waitlistDescDe}>Erfahre als Erstes, wenn Pro-Features wie das Performance-Archiv, RPE-Präzision und Volumen-Optimierung verfügbar sind.</Text>
 
           <View style={styles.inputRow}>
             <TextInput
