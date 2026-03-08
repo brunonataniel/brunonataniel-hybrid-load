@@ -149,8 +149,7 @@ function FatigueOption({
   );
 }
 
-export default React.memo(function FatigueCheckIn({ value, onChange, selectedLift }: FatigueCheckInProps) {
-  // isProUnlocked and onProGateTriggered kept in interface for caller compat
+export default React.memo(function FatigueCheckIn({ value, onChange, isProUnlocked, onProGateTriggered, selectedLift }: FatigueCheckInProps) {
   const totalReduction = getFatigueReductionPercent(value, selectedLift);
   const totalOpacity = useRef(new Animated.Value(totalReduction > 0 ? 1 : 0)).current;
   const badgeScale = useRef(new Animated.Value(1)).current;
@@ -178,17 +177,16 @@ export default React.memo(function FatigueCheckIn({ value, onChange, selectedLif
     if (isActive) {
       onChange(value.filter((t) => t !== type));
     } else {
-      // TODO: RE-ENABLE PRO GATE AFTER AUDIT
-      // if (!isProUnlocked && value.length >= 1) {
-      //   if (Platform.OS !== 'web') {
-      //     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-      //   }
-      //   onProGateTriggered();
-      //   return;
-      // }
+      if (!isProUnlocked && value.length >= 1) {
+        if (Platform.OS !== 'web') {
+          void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+        }
+        onProGateTriggered();
+        return;
+      }
       onChange([...value, type]);
     }
-  }, [value, onChange]);
+  }, [value, onChange, isProUnlocked, onProGateTriggered]);
 
   return (
     <View style={styles.container}>
