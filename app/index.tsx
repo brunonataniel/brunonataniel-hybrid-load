@@ -54,7 +54,7 @@ const FEATURES = [
     icon: Activity,
     title: 'RUNNING',
     subtitle: 'Cardio',
-    reduction: '12%',
+    reduction: '10%',
     description: 'Factors in lower body fatigue from distance runs',
   },
   {
