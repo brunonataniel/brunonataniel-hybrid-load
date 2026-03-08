@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect, useState, useCallback } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
 import { AppProvider } from "@/providers/AppProvider";
@@ -27,12 +27,41 @@ function RootLayoutNav() {
 }
 
 const LOGO_URL = 'https://r2-pub.rork.com/generated-images/ad7cd1ad-6a31-4577-b3a6-dd32ceddc30d.png';
+const FAVICON_URL = 'https://r2-pub.rork.com/generated-images/0b4f1e20-5658-49a3-ad27-903c0dc8bf34.png';
 
 export default function RootLayout() {
   const [showSplash, setShowSplash] = useState<boolean>(true);
 
   useEffect(() => {
     void SplashScreen.hideAsync();
+  }, []);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    try {
+      const existingIcons = document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]');
+      existingIcons.forEach((el) => el.parentNode?.removeChild(el));
+
+      const sizes = [
+        { rel: 'icon', type: 'image/png', size: '32x32' },
+        { rel: 'icon', type: 'image/png', size: '16x16' },
+        { rel: 'apple-touch-icon', type: 'image/png', size: '180x180' },
+        { rel: 'shortcut icon', type: 'image/png', size: undefined },
+      ];
+
+      sizes.forEach(({ rel, type, size }) => {
+        const link = document.createElement('link');
+        link.rel = rel;
+        link.type = type;
+        link.href = `${FAVICON_URL}?v=2`;
+        if (size) link.setAttribute('sizes', size);
+        document.head.appendChild(link);
+      });
+
+      console.log('[RootLayout] Favicon updated to Hyper-H');
+    } catch (e) {
+      console.log('[RootLayout] Favicon update skipped:', e);
+    }
   }, []);
 
   const handleSplashFinish = useCallback(() => {

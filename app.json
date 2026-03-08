@@ -26,9 +26,13 @@
     },
     "web": {
       "favicon": "./assets/images/favicon.png",
-      "title": "Hybrid Load Calculator",
+      "title": "HybridLoad — Fatigue Engine for Hybrid Athletes",
       "bundler": "metro",
-      "output": "single"
+      "output": "single",
+      "themeColor": "#000000",
+      "backgroundColor": "#000000",
+      "name": "HybridLoad",
+      "shortName": "HybridLoad"
     },
     "plugins": [
       [
