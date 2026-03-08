@@ -118,12 +118,6 @@ export default function PrivacyScreen() {
           </View>
         ))}
 
-        <View style={styles.copyrightSection}>
-          <Text style={styles.copyrightText}>
-            Copyright notice: This privacy policy was created by the specialist lawyers at IT-Recht Kanzlei and is protected by copyright (https://www.it-recht-kanzlei.de).
-          </Text>
-        </View>
-
         <View style={styles.divider}>
           <View style={styles.dividerLine} />
           <Text style={styles.dividerText}>
