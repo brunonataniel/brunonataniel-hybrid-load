@@ -309,9 +309,7 @@ export default function LandingScreen() {
 
           <Text style={styles.ctaNote}>Privacy First. Accounts only required for Pro Features.</Text>
 
-          <View style={styles.betaBadge}>
-            <Text style={styles.betaBadgeText}>V1 Engine Logic based on established Sport Science principles.</Text>
-          </View>
+
         </Animated.View>
 
         <View style={styles.waitlistSection}>
