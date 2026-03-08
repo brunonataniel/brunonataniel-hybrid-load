@@ -11,41 +11,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, Shield } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 
-const EN_SECTIONS = [
-  {
-    title: '1) Introduction and contact details of the controller',
-    body: `1.1 We are delighted that you are visiting our website and thank you for your interest. Below, we provide information about how we handle your personal data when you use our website. Personal data refers to all data that can be used to identify you personally.\n\n1.2 The controller responsible for data processing on this website within the meaning of the General Data Protection Regulation (GDPR) is Bruno Nataniel Cuino Fernandes, Boberstrasse 4, 22547 Hamburg, Germany, email: support@hybridload.com. The controller responsible for processing personal data is the natural or legal person who, alone or jointly with others, decides on the purposes and means of processing personal data.`,
-  },
-  {
-    title: '2) Data collection when visiting our website',
-    body: `2.1 When you use our website for informational purposes only, i.e., if you do not register or otherwise provide us with information, we only collect data that your browser transmits to the page server (so-called "server log files"). When you visit our website, we collect the following data, which is technically necessary for us to display the website to you:\n\n\u2022 Our visited website\n\u2022 Date and time of access\n\u2022 Amount of data sent in bytes\n\u2022 Source/reference from which you accessed the site\n\u2022 Browser used\n\u2022 Operating system used\n\u2022 IP address used (if applicable: in anonymized form)\n\nThe processing is carried out in accordance with Art. 6 (1) lit. f GDPR on the basis of our legitimate interest in improving the stability and functionality of our website. The data will not be passed on or used for any other purpose. However, we reserve the right to check the server log files retrospectively if there are concrete indications of illegal use.\n\n2.2 For security reasons and to protect the transmission of personal data and other confidential content (e.g., orders or inquiries to the controller), this website uses SSL or TLS encryption. You can recognize an encrypted connection by the string "https://" and the lock symbol in your browser line.`,
-  },
-  {
-    title: '3) Hosting & Content Delivery Network',
-    body: `3.1 For the hosting of our website and the presentation of the page content, we use a provider who provides its services itself or through selected subcontractors exclusively on servers within the European Union.\nAll data collected on our website is processed on these servers.\nWe have concluded a data processing agreement with the provider that ensures the protection of our website visitors' data and prohibits unauthorized disclosure to third parties.\n\n3.2 Cloudflare\nWe use a content delivery network from the following provider: Cloudflare Inc., 101 Townsend St. San Francisco, CA 94107, USA\nThis service enables us to deliver large media files such as graphics, page content, or scripts more quickly via a network of regionally distributed servers. The processing is carried out to safeguard our legitimate interest in improving the stability and functionality of our website in accordance with Art. 6 (1) lit. f GDPR. We have concluded a data processing agreement with the provider that ensures the protection of our website visitors' data and prohibits unauthorized disclosure to third parties.\nFor data transfers to the USA, the provider has joined the EU-US Data Privacy Framework, which ensures compliance with European data protection standards on the basis of an adequacy decision by the European Commission.\n\n3.3 Fastly\nWe use a content delivery network from the following provider: Fastly Inc., 475 Brannan St. #300, San Francisco, CA 94107, USA\nThis service enables us to deliver large media files such as graphics, page content, or scripts more quickly via a network of regionally distributed servers. The processing is carried out to protect our legitimate interest in improving the stability and functionality of our website in accordance with Art. 6 (1) lit. f GDPR. We have concluded a data processing agreement with the provider that ensures the protection of our website visitors' data and prohibits unauthorized disclosure to third parties.\nFor data transfers to the USA, the provider has joined the EU-US Data Privacy Framework, which ensures compliance with European data protection standards on the basis of an adequacy decision by the European Commission.`,
-  },
-  {
-    title: '4) Cookies',
-    body: `In order to make visiting our website attractive and to enable the use of certain functions, we use cookies, i.e., small text files that are stored on your device. Some of these cookies are automatically deleted after closing the browser (so-called "session cookies"), while others remain on your device for a longer period of time and enable the storage of page settings (so-called "persistent cookies"). In the latter case, you can find the storage period in the overview of your web browser's cookie settings.\n\nIf personal data is also processed by individual cookies used by us, the processing is carried out in accordance with Art. 6 (1) lit. b GDPR either for the performance of the contract, pursuant to Art. 6 (1) (a) GDPR in the case of consent, or pursuant to Art. 6 (1) (f) GDPR to safeguard our legitimate interests in the best possible functionality of the website and a customer-friendly and effective design of the site visit.\n\nYou can set your browser so that you are informed about the setting of cookies and can decide individually whether to accept them or to exclude the acceptance of cookies in certain cases or in general.\n\nPlease note that if you do not accept cookies, the functionality of our website may be limited.`,
-  },
-  {
-    title: '5) Contact',
-    body: `When you contact us (e.g., via contact form or email), personal data is processed exclusively for the purpose of processing and responding to your request and only to the extent necessary for this purpose.\n\nThe legal basis for the processing of this data is our legitimate interest in responding to your request in accordance with Art. 6 (1) lit. f GDPR. If your contact is aimed at concluding a contract, the additional legal basis for processing is Art. 6 (1) lit. b GDPR. Your data will be deleted if it can be inferred from the circumstances that the matter in question has been conclusively clarified and provided that there are no legal retention obligations to the contrary.`,
-  },
-  {
-    title: '6) Data processing for order processing',
-    body: `Insofar as necessary for the execution of the contract for delivery and payment purposes, the personal data collected by us will be passed on to the commissioned transport company and the commissioned credit institution in accordance with Art. 6 (1) lit. b GDPR.\n\nIf we owe you updates for goods with digital elements or for digital products on the basis of a corresponding contract, we will process the contact data you provided when placing your order in order to inform you personally within the scope of our legal information obligations in accordance with Art. 6 (1) lit. c GDPR. Your contact details will be used strictly for the purpose of communicating updates owed by us and will only be processed by us to the extent necessary for the respective information.\n\nTo process your order, we also work with the following service provider(s), who support us in whole or in part in the execution of concluded contracts. Certain personal data is transferred to these service providers in accordance with the following information.`,
-  },
-  {
-    title: '7) Rights of the data subject',
-    body: `7.1 The applicable data protection law grants you the following rights as a data subject (rights of access and intervention) vis-a-vis the controller with regard to the processing of your personal data, whereby reference is made to the legal basis cited for the respective conditions for exercising these rights:\n\n\u2022 Right of access pursuant to Art. 15 GDPR\n\u2022 Right to rectification pursuant to Art. 16 GDPR\n\u2022 Right to erasure pursuant to Art. 17 GDPR\n\u2022 Right to restriction of processing pursuant to Art. 18 GDPR\n\u2022 Right to notification pursuant to Art. 19 GDPR\n\u2022 Right to data portability pursuant to Art. 20 GDPR\n\u2022 Right to withdraw consent pursuant to Art. 7 (3) GDPR\n\u2022 Right to lodge a complaint pursuant to Art. 77 GDPR\n\n7.2 RIGHT TO OBJECT\n\nIF WE PROCESS YOUR PERSONAL DATA ON THE BASIS OF OUR OVERRIDING LEGITIMATE INTEREST IN THE CONTEXT OF A BALANCING OF INTERESTS, YOU HAVE THE RIGHT TO OBJECT TO THIS PROCESSING AT ANY TIME FOR REASONS ARISING FROM YOUR PARTICULAR SITUATION, WITH EFFECT FOR THE FUTURE.\n\nIF YOU EXERCISE YOUR RIGHT TO OBJECT, WE WILL STOP PROCESSING THE DATA CONCERNED. HOWEVER, FURTHER PROCESSING REMAINS RESERVED IF WE CAN PROVE COMPELLING LEGITIMATE GROUNDS FOR THE PROCESSING THAT OUTWEIGH YOUR INTERESTS, FUNDAMENTAL RIGHTS AND FREEDOMS, OR IF THE PROCESSING SERVES TO ASSERT, EXERCISE, OR DEFEND LEGAL CLAIMS.\n\nIF WE PROCESS YOUR PERSONAL DATA FOR DIRECT MARKETING PURPOSES, YOU HAVE THE RIGHT TO OBJECT AT ANY TIME TO THE PROCESSING OF PERSONAL DATA CONCERNING YOU FOR THE PURPOSE OF SUCH ADVERTISING. YOU CAN EXERCISE YOUR RIGHT TO OBJECT AS DESCRIBED ABOVE.\n\nIF YOU EXERCISE YOUR RIGHT TO OBJECT, WE WILL STOP PROCESSING THE DATA CONCERNING YOU FOR DIRECT MARKETING PURPOSES.`,
-  },
-  {
-    title: '8) Duration of storage of personal data',
-    body: `The duration of the storage of personal data is determined by the respective legal basis, the purpose of processing and, if relevant, additionally by the respective statutory retention period (e.g., commercial and tax law retention periods).\n\nWhen processing personal data on the basis of express consent in accordance with Art. 6 (1) (a) GDPR, the data concerned will be stored until you revoke your consent.\n\nIf there are statutory retention periods for data that is processed within the framework of legal or quasi-legal obligations on the basis of Art. 6 (1) (b) GDPR, this data will be routinely deleted after the retention periods have expired, provided that it is no longer necessary for the fulfillment or initiation of a contract and/or we no longer have a legitimate interest in continuing to store it.\n\nWhen processing personal data on the basis of Art. 6 (1) lit. f GDPR, this data will be stored until you exercise your right to object under Art. 21 (1) GDPR, unless we can demonstrate compelling legitimate grounds for the processing which override your interests, rights, and freedoms, or the processing serves to assert, exercise, or defend legal claims.\n\nWhen processing personal data for the purpose of direct marketing on the basis of Art. 6 (1) lit. f GDPR, this data will be stored until you exercise your right to object under Art. 21 (2) GDPR.\n\nUnless otherwise specified in the other information in this statement regarding specific processing situations, stored personal data will otherwise be deleted when it is no longer necessary for the purposes for which it was collected or otherwise processed.`,
-  },
-];
-
 const DE_SECTIONS = [
   {
     title: '1) Einleitung und Kontaktdaten des Verantwortlichen',
@@ -104,36 +69,7 @@ export default function PrivacyScreen() {
           <View style={styles.iconWrap}>
             <Shield size={24} color={Colors.accent} />
           </View>
-          <Text style={styles.title}>PRIVACY POLICY / DATENSCHUTZ</Text>
-        </View>
-
-        <View style={styles.langLabel}>
-          <Text style={styles.langLabelText}>ENGLISH</Text>
-        </View>
-
-        {EN_SECTIONS.map((section, index) => (
-          <View key={`en-${index}`} style={styles.section}>
-            <Text style={styles.sectionTitle}>{section.title}</Text>
-            <Text style={styles.sectionBody}>{section.body}</Text>
-          </View>
-        ))}
-
-        <View style={styles.copyrightSection}>
-          <Text style={styles.copyrightText}>
-            Copyright notice: This privacy policy was created by the specialist lawyers at IT-Recht Kanzlei and is protected by copyright (https://www.it-recht-kanzlei.de).
-          </Text>
-        </View>
-
-        <View style={styles.divider}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>
-            English version for convenience; the German version below is legally binding.
-          </Text>
-          <View style={styles.dividerLine} />
-        </View>
-
-        <View style={styles.langLabel}>
-          <Text style={styles.langLabelText}>DEUTSCH</Text>
+          <Text style={styles.title}>DATENSCHUTZ</Text>
         </View>
 
         {DE_SECTIONS.map((section, index) => (
@@ -192,15 +128,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     marginBottom: 6,
   },
-  langLabel: {
-    marginBottom: 16,
-  },
-  langLabelText: {
-    fontSize: 11,
-    fontWeight: '700' as const,
-    color: Colors.accent,
-    letterSpacing: 2,
-  },
   section: {
     marginBottom: 28,
   },
@@ -226,23 +153,5 @@ const styles = StyleSheet.create({
     color: Colors.textTertiary,
     lineHeight: 18,
     marginBottom: 4,
-  },
-  divider: {
-    marginVertical: 32,
-    alignItems: 'center',
-    gap: 12,
-  },
-  dividerLine: {
-    height: 1,
-    width: '100%',
-    backgroundColor: Colors.border,
-  },
-  dividerText: {
-    fontSize: 12,
-    color: Colors.textTertiary,
-    textAlign: 'center' as const,
-    lineHeight: 18,
-    fontStyle: 'italic' as const,
-    paddingHorizontal: 8,
   },
 });
