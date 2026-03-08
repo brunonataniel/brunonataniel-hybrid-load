@@ -4,6 +4,7 @@ const DB_NAMESPACE = process.env.EXPO_PUBLIC_RORK_DB_NAMESPACE;
 
 const TOTAL_SPOTS = 50;
 const COUNTER_ID = 'spots_counter:main';
+const INITIAL_CLAIMED = 2;
 
 async function dbQuery(sql: string): Promise<any> {
   if (!DB_ENDPOINT || !DB_TOKEN || !DB_NAMESPACE) {
@@ -46,9 +47,9 @@ export async function getSpotsRemaining(): Promise<number> {
       return Math.max(0, TOTAL_SPOTS - claimed);
     }
 
-    console.log('[SpotsCounter] No counter record found, initializing');
-    await dbQuery(`CREATE ${COUNTER_ID} SET claimed = 0, updated_at = time::now()`);
-    return TOTAL_SPOTS;
+    console.log('[SpotsCounter] No counter record found, initializing with', INITIAL_CLAIMED, 'claimed');
+    await dbQuery(`CREATE ${COUNTER_ID} SET claimed = ${INITIAL_CLAIMED}, updated_at = time::now()`);
+    return TOTAL_SPOTS - INITIAL_CLAIMED;
   } catch (err) {
     console.log('[SpotsCounter] getSpotsRemaining error:', err);
     return TOTAL_SPOTS;
@@ -77,6 +78,17 @@ export async function claimSpot(): Promise<{ spotsRemaining: number; success: bo
   } catch (err) {
     console.log('[SpotsCounter] claimSpot error:', err);
     return { spotsRemaining: TOTAL_SPOTS - 1, success: true };
+  }
+}
+
+export async function seedCounter(): Promise<void> {
+  try {
+    console.log('[SpotsCounter] Seeding counter to', INITIAL_CLAIMED, 'claimed');
+    await dbQuery(`DELETE ${COUNTER_ID}`);
+    await dbQuery(`CREATE ${COUNTER_ID} SET claimed = ${INITIAL_CLAIMED}, updated_at = time::now()`);
+    console.log('[SpotsCounter] Counter seeded successfully');
+  } catch (err) {
+    console.log('[SpotsCounter] seedCounter error:', err);
   }
 }
 

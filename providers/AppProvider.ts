@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import createContextHook from '@nkzw/create-context-hook';
 import { FatigueType, UnitSystem, LiftType, convertWeight } from '@/utils/plateCalculator';
+import { seedCounter } from '@/utils/spotsCounter';
 
 export interface HistoryEntry {
   id: string;
@@ -23,6 +24,7 @@ const STORAGE_KEYS = {
 } as const;
 
 const MAX_HISTORY = 5;
+const SEED_KEY = 'hybrid_load_counter_seeded_v2';
 
 export const [AppProvider, useApp] = createContextHook(() => {
   const [maxLift, setMaxLift] = useState<string>('315');
@@ -30,6 +32,17 @@ export const [AppProvider, useApp] = createContextHook(() => {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [isProUnlocked, setIsProUnlocked] = useState<boolean>(false);
   const [selectedLift, setSelectedLift] = useState<LiftType>('squat');
+
+  useEffect(() => {
+    void AsyncStorage.getItem(SEED_KEY).then((val) => {
+      if (!val) {
+        console.log('[AppProvider] Running one-time counter seed');
+        void seedCounter().then(() => {
+          void AsyncStorage.setItem(SEED_KEY, 'true');
+        });
+      }
+    });
+  }, []);
 
   const storedDataQuery = useQuery({
     queryKey: ['stored-data'],

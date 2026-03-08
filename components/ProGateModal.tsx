@@ -232,8 +232,9 @@ export default React.memo(function ProGateModal({ visible, onClose, onUnlock }: 
                     ? 'All 50 Lifetime Pro passes have been claimed. Join the waitlist to be notified when new spots open up.'
                     : (
                       <>
-                        Unlock the full power of HybridLoad. Pro includes Multi-Engine stacking, the Performance Archive, RPE-based precision, and Volume Optimization. During our Beta, we are granting{' '}
-                        <Text style={styles.subtextHighlight}>Lifetime Pro Access</Text> to the first 50 testers who provide feedback.
+                        Unlock the full power of HybridLoad. Pro includes Multi-Engine stacking, the Performance Archive, RPE-based precision, and Volume Optimization.{' '}
+                        <Text style={styles.subtextHighlight}>Only {spotsRemaining} Lifetime Pro passes remain.</Text>{' '}
+                        During our Beta, we are granting Lifetime Pro Access to testers who provide feedback.
                       </>
                     )
                   }
