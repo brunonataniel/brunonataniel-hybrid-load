@@ -20,6 +20,7 @@ const STORAGE_KEYS = {
   maxLift: 'hybrid_load_max_lift',
   unit: 'hybrid_load_unit',
   history: 'hybrid_load_history',
+  proUnlocked: 'hybrid_load_pro_unlocked',
 } as const;
 
 const MAX_HISTORY = 5;
@@ -29,20 +30,23 @@ export const [AppProvider, useApp] = createContextHook(() => {
   const [unit, setUnit] = useState<UnitSystem>('lbs');
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [selectedLift, setSelectedLift] = useState<LiftType>('squat');
+  const [isProUnlocked, setIsProUnlocked] = useState<boolean>(false);
 
 
   const storedDataQuery = useQuery({
     queryKey: ['stored-data'],
     queryFn: async () => {
-      const [storedMax, storedUnit, storedHistory] = await Promise.all([
+      const [storedMax, storedUnit, storedHistory, storedPro] = await Promise.all([
         AsyncStorage.getItem(STORAGE_KEYS.maxLift),
         AsyncStorage.getItem(STORAGE_KEYS.unit),
         AsyncStorage.getItem(STORAGE_KEYS.history),
+        AsyncStorage.getItem(STORAGE_KEYS.proUnlocked),
       ]);
       return {
         maxLift: storedMax ?? '315',
         unit: (storedUnit as UnitSystem) ?? 'lbs',
         history: storedHistory ? (JSON.parse(storedHistory) as HistoryEntry[]) : [],
+        proUnlocked: storedPro === 'true',
       };
     },
     staleTime: Infinity,
@@ -53,6 +57,7 @@ export const [AppProvider, useApp] = createContextHook(() => {
       setMaxLift(storedDataQuery.data.maxLift);
       setUnit(storedDataQuery.data.unit);
       setHistory(storedDataQuery.data.history);
+      setIsProUnlocked(storedDataQuery.data.proUnlocked);
     }
   }, [storedDataQuery.data]);
 
@@ -122,6 +127,18 @@ export const [AppProvider, useApp] = createContextHook(() => {
     saveLift(lift);
   }, [saveLift]);
 
+  const { mutate: saveProUnlocked } = useMutation({
+    mutationFn: async (value: boolean) => {
+      await AsyncStorage.setItem(STORAGE_KEYS.proUnlocked, value ? 'true' : 'false');
+      return value;
+    },
+  });
+
+  const unlockPro = useCallback(() => {
+    setIsProUnlocked(true);
+    saveProUnlocked(true);
+  }, [saveProUnlocked]);
+
   const clearHistory = useCallback(() => {
     setHistory([]);
     saveHistory([]);
@@ -132,11 +149,13 @@ export const [AppProvider, useApp] = createContextHook(() => {
     unit,
     history,
     isLoading: storedDataQuery.isLoading,
+    isProUnlocked,
     updateMaxLift,
     updateUnit,
     addHistoryEntry,
     clearHistory,
+    unlockPro,
     selectedLift,
     updateLift,
-  }), [maxLift, unit, history, storedDataQuery.isLoading, updateMaxLift, updateUnit, addHistoryEntry, clearHistory, selectedLift, updateLift]);
+  }), [maxLift, unit, history, storedDataQuery.isLoading, isProUnlocked, updateMaxLift, updateUnit, addHistoryEntry, clearHistory, unlockPro, selectedLift, updateLift]);
 });

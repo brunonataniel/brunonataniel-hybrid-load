@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
-import { Weight, RotateCcw, Info, X } from 'lucide-react-native';
+import { Weight, RotateCcw, Info, X, Lock } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { calculatePlates, FatigueType, getPlateColor, getPlateLabel, PlateBreakdown, UnitSystem, getBarWeight, getFatigueReductionPercent } from '@/utils/plateCalculator';
@@ -23,6 +23,7 @@ import BarbellVisual from '@/components/BarbellVisual';
 import FatigueCheckIn from '@/components/FatigueToggle';
 import LiftSelector from '@/components/LiftSelector';
 import { useApp } from '@/providers/AppProvider';
+import ProUnlockModal from '@/components/ProUnlockModal';
 
 const PERCENTAGES = [50, 60, 70, 80, 90, 100] as const;
 
@@ -205,7 +206,8 @@ function useCountingAnimation(targetValue: number, duration: number = 350) {
 }
 
 export default function CalculatorScreen() {
-  const { maxLift, unit, updateMaxLift, updateUnit, addHistoryEntry, selectedLift, updateLift } = useApp();
+  const { maxLift, unit, updateMaxLift, updateUnit, addHistoryEntry, selectedLift, updateLift, isProUnlocked } = useApp();
+  const [showProModal, setShowProModal] = useState<boolean>(false);
   const router = useRouter();
   const [targetPercent, setTargetPercent] = useState<number>(80);
   const [activeFatigues, setActiveFatigues] = useState<FatigueType[]>([]);
@@ -467,24 +469,58 @@ export default function CalculatorScreen() {
               selectedLift={selectedLift}
             />
 
-            <BarbellVisual plates={result.plates} unit={unit} lift={selectedLift} />
+            {isProUnlocked ? (
+              <>
+                <BarbellVisual plates={result.plates} unit={unit} lift={selectedLift} />
 
-            {result.plates.length > 0 ? (
-              <View style={styles.plateBreakdown}>
-                <Text style={styles.sectionLabel}>PLATES PER SIDE</Text>
-                <View style={styles.plateList}>
-                  {result.plates.map((plate) => (
-                    <PlateRow key={plate.weight} plate={plate} unit={unit} />
-                  ))}
-                </View>
-                <Text style={styles.barNote}>Bar: {result.barWeight} {unit}</Text>
-              </View>
+                {result.plates.length > 0 ? (
+                  <View style={styles.plateBreakdown}>
+                    <Text style={styles.sectionLabel}>PLATES PER SIDE</Text>
+                    <View style={styles.plateList}>
+                      {result.plates.map((plate) => (
+                        <PlateRow key={plate.weight} plate={plate} unit={unit} />
+                      ))}
+                    </View>
+                    <Text style={styles.barNote}>Bar: {result.barWeight} {unit}</Text>
+                  </View>
+                ) : (
+                  <View style={styles.emptyState}>
+                    <Weight size={28} color={Colors.textTertiary} />
+                    <Text style={styles.emptyText}>
+                      {numericMax === 0 ? 'Enter your 1-rep max' : `Just the bar — ${getBarWeight(unit)} ${unit}`}
+                    </Text>
+                  </View>
+                )}
+              </>
             ) : (
-              <View style={styles.emptyState}>
-                <Weight size={28} color={Colors.textTertiary} />
-                <Text style={styles.emptyText}>
-                  {numericMax === 0 ? 'Enter your 1-rep max' : `Just the bar — ${getBarWeight(unit)} ${unit}`}
-                </Text>
+              <View style={styles.lockedSection}>
+                <View style={styles.lockedPreview}>
+                  <View style={styles.blurredBarbell}>
+                    <View style={styles.blurCollar} />
+                    <View style={styles.blurPlate} />
+                    <View style={styles.blurPlateSmall} />
+                    <View style={styles.blurSleeve} />
+                    <View style={styles.blurBar} />
+                    <View style={styles.blurSleeve} />
+                    <View style={styles.blurPlateSmall} />
+                    <View style={styles.blurPlate} />
+                    <View style={styles.blurCollar} />
+                  </View>
+                  <View style={styles.lockOverlay}>
+                    <View style={styles.lockIconWrap}>
+                      <Lock size={28} color={Colors.accent} strokeWidth={2} />
+                    </View>
+                  </View>
+                </View>
+                <Text style={styles.lockedText}>See your exact plate setup</Text>
+                <TouchableOpacity
+                  testID="unlock-pro-plates"
+                  style={styles.unlockButton}
+                  onPress={() => setShowProModal(true)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.unlockButtonText}>UNLOCK PRO</Text>
+                </TouchableOpacity>
               </View>
             )}
 
@@ -504,6 +540,7 @@ export default function CalculatorScreen() {
         </KeyboardAvoidingView>
       </SafeAreaView>
 
+            <ProUnlockModal visible={showProModal} onClose={() => setShowProModal(false)} />
     </View>
   );
 }
@@ -823,6 +860,88 @@ const styles = StyleSheet.create({
     color: Colors.textTertiary,
     marginTop: 8,
     letterSpacing: 0.3,
+  },
+  lockedSection: {
+    alignItems: 'center' as const,
+    gap: 14,
+    paddingVertical: 8,
+  },
+  lockedPreview: {
+    width: '100%' as const,
+    height: 108,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    position: 'relative' as const,
+  },
+  blurredBarbell: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    opacity: 0.15,
+  },
+  blurBar: {
+    width: 84,
+    height: 6,
+    backgroundColor: '#4A4A4C',
+    borderRadius: 3,
+  },
+  blurSleeve: {
+    width: 12,
+    height: 11,
+    backgroundColor: '#3A3A3C',
+    borderRadius: 2,
+  },
+  blurCollar: {
+    width: 6,
+    height: 17,
+    backgroundColor: '#2C2C2E',
+    borderRadius: 2,
+  },
+  blurPlate: {
+    width: 14,
+    height: 72,
+    backgroundColor: '#636366',
+    borderRadius: 3,
+  },
+  blurPlateSmall: {
+    width: 14,
+    height: 52,
+    backgroundColor: '#636366',
+    borderRadius: 3,
+  },
+  lockOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  lockIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(204, 255, 0, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(204, 255, 0, 0.2)',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  lockedText: {
+    fontSize: 14,
+    fontWeight: '500' as const,
+    color: Colors.textSecondary,
+    textAlign: 'center' as const,
+  },
+  unlockButton: {
+    backgroundColor: Colors.accent,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    alignItems: 'center' as const,
+  },
+  unlockButtonText: {
+    fontSize: 13,
+    fontWeight: '800' as const,
+    letterSpacing: 1.5,
+    color: '#0D0D0D',
   },
   breakdownContainer: {
     marginTop: 12,

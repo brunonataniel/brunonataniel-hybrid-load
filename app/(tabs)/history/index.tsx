@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -10,9 +10,10 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
-import { Clock, Trash2, Swords, Footprints, Zap, Waves, PersonStanding, Dumbbell, ArrowDown, ArrowUp, Crown } from 'lucide-react-native';
+import { Clock, Trash2, Swords, Footprints, Zap, Waves, PersonStanding, Dumbbell, ArrowDown, ArrowUp, Crown, Lock } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { useApp, HistoryEntry } from '@/providers/AppProvider';
+import ProUnlockModal from '@/components/ProUnlockModal';
 import { FatigueType, UnitSystem, LiftType, convertWeight, getFatigueReductionPercent } from '@/utils/plateCalculator';
 
 const FATIGUE_META: Record<FatigueType, { label: string; icon: typeof Zap; color: string }> = {
@@ -136,7 +137,8 @@ function HistoryCard({ entry, globalUnit }: { entry: HistoryEntry; globalUnit: U
 }
 
 export default function HistoryScreen() {
-  const { history, clearHistory, unit } = useApp();
+  const { history, clearHistory, unit, isProUnlocked } = useApp();
+  const [showProModal, setShowProModal] = useState<boolean>(false);
 
   const handleClear = useCallback(() => {
     if (Platform.OS !== 'web') {
@@ -163,7 +165,23 @@ export default function HistoryScreen() {
           )}
         </View>
 
-        {history.length === 0 ? (
+        {!isProUnlocked ? (
+          <View style={styles.lockedContainer}>
+            <View style={styles.lockIconWrap}>
+              <Lock size={36} color={Colors.accent} strokeWidth={1.5} />
+            </View>
+            <Text style={styles.lockedTitle}>Track every session. See your training patterns.</Text>
+            <TouchableOpacity
+              testID="unlock-pro-history"
+              style={styles.unlockButton}
+              onPress={() => setShowProModal(true)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.unlockButtonText}>UNLOCK PRO</Text>
+            </TouchableOpacity>
+            <ProUnlockModal visible={showProModal} onClose={() => setShowProModal(false)} />
+          </View>
+        ) : history.length === 0 ? (
           <View style={styles.emptyContainer}>
             <View style={styles.emptyIconWrap}>
               <Clock size={36} color={Colors.textTertiary} strokeWidth={1.2} />
@@ -339,6 +357,45 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+  },
+  lockedContainer: {
+    flex: 1,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    paddingBottom: 80,
+    paddingHorizontal: 32,
+    gap: 18,
+  },
+  lockIconWrap: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(204, 255, 0, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(204, 255, 0, 0.15)',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  lockedTitle: {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    color: Colors.textPrimary,
+    textAlign: 'center' as const,
+    lineHeight: 23,
+  },
+  unlockButton: {
+    backgroundColor: Colors.accent,
+    borderRadius: 12,
+    paddingVertical: 15,
+    paddingHorizontal: 36,
+    alignItems: 'center' as const,
+    marginTop: 4,
+  },
+  unlockButtonText: {
+    fontSize: 13,
+    fontWeight: '800' as const,
+    letterSpacing: 1.5,
+    color: '#0D0D0D',
   },
   emptyContainer: {
     flex: 1,
