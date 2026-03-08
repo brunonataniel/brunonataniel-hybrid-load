@@ -392,6 +392,15 @@ export default function LandingScreen() {
           <Mail size={13} color={Colors.textTertiary} />
           <Text style={styles.contactText}>support@hybridload.com</Text>
         </TouchableOpacity>
+
+        <View style={styles.disclaimerWrap}>
+          <Text style={styles.disclaimerText}>
+            Rechtlicher Hinweis: Dieser Rechner dient ausschließlich Informations- und Trainingszwecken. Er stellt keine medizinische Diagnose oder Beratung dar.
+          </Text>
+          <Text style={styles.disclaimerTextEn}>
+            Disclaimer: This calculator is for informational and training purposes only. It does not constitute medical diagnosis or advice.
+          </Text>
+        </View>
       </ScrollView>
     </View>
   );
@@ -746,5 +755,26 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.textTertiary,
     fontWeight: '500' as const,
+  },
+  disclaimerWrap: {
+    marginTop: 24,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.04)',
+  },
+  disclaimerText: {
+    fontSize: 10,
+    color: Colors.textTertiary,
+    lineHeight: 15,
+    textAlign: 'center' as const,
+    opacity: 0.6,
+    marginBottom: 6,
+  },
+  disclaimerTextEn: {
+    fontSize: 10,
+    color: Colors.textTertiary,
+    lineHeight: 15,
+    textAlign: 'center' as const,
+    opacity: 0.45,
   },
 });

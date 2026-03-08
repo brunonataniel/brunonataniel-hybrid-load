@@ -111,6 +111,16 @@ export default function ImpressumScreen() {
             {' '}finden. Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
           </Text>
         </View>
+
+        <View style={styles.disclaimerSection}>
+          <View style={styles.disclaimerLine} />
+          <Text style={styles.disclaimerTextDe}>
+            Rechtlicher Hinweis: Dieser Rechner dient ausschließlich Informations- und Trainingszwecken. Er stellt keine medizinische Diagnose oder Beratung dar.
+          </Text>
+          <Text style={styles.disclaimerTextEn}>
+            Disclaimer: This calculator is for informational and training purposes only. It does not constitute medical diagnosis or advice.
+          </Text>
+        </View>
       </ScrollView>
     </View>
   );
@@ -199,5 +209,26 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     fontStyle: 'italic' as const,
     paddingHorizontal: 8,
+  },
+  disclaimerSection: {
+    marginTop: 32,
+    paddingTop: 24,
+  },
+  disclaimerLine: {
+    height: 1,
+    backgroundColor: Colors.border,
+    marginBottom: 16,
+  },
+  disclaimerTextDe: {
+    fontSize: 11,
+    color: Colors.textTertiary,
+    lineHeight: 17,
+    marginBottom: 8,
+  },
+  disclaimerTextEn: {
+    fontSize: 11,
+    color: Colors.textTertiary,
+    lineHeight: 17,
+    opacity: 0.7,
   },
 });
