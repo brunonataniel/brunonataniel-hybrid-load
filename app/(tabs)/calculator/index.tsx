@@ -22,7 +22,6 @@ import { calculatePlates, FatigueType, getPlateColor, getPlateLabel, PlateBreakd
 import BarbellVisual from '@/components/BarbellVisual';
 import FatigueCheckIn from '@/components/FatigueToggle';
 import LiftSelector from '@/components/LiftSelector';
-import ProGateModal from '@/components/ProGateModal';
 import { useApp } from '@/providers/AppProvider';
 
 const PERCENTAGES = [50, 60, 70, 80, 90, 100] as const;
@@ -206,14 +205,13 @@ function useCountingAnimation(targetValue: number, duration: number = 350) {
 }
 
 export default function CalculatorScreen() {
-  const { maxLift, unit, updateMaxLift, updateUnit, addHistoryEntry, isProUnlocked, unlockPro, selectedLift, updateLift } = useApp();
+  const { maxLift, unit, updateMaxLift, updateUnit, addHistoryEntry, selectedLift, updateLift } = useApp();
   const router = useRouter();
   const [targetPercent, setTargetPercent] = useState<number>(80);
   const [activeFatigues, setActiveFatigues] = useState<FatigueType[]>([]);
   const weightAnim = useRef(new Animated.Value(1)).current;
   const lastLoggedRef = useRef<string>('');
   const cnsOpacity = useRef(new Animated.Value(0)).current;
-  const [showProModal, setShowProModal] = useState<boolean>(false);
 
   const numericMax = useMemo(() => {
     const val = parseFloat(maxLift);
@@ -466,8 +464,6 @@ export default function CalculatorScreen() {
             <FatigueCheckIn
               value={activeFatigues}
               onChange={handleFatigueChange}
-              isProUnlocked={isProUnlocked}
-              onProGateTriggered={() => setShowProModal(true)}
               selectedLift={selectedLift}
             />
 
@@ -508,14 +504,6 @@ export default function CalculatorScreen() {
         </KeyboardAvoidingView>
       </SafeAreaView>
 
-      <ProGateModal
-        visible={showProModal}
-        onClose={() => setShowProModal(false)}
-        onUnlock={() => {
-          setShowProModal(false);
-          unlockPro();
-        }}
-      />
     </View>
   );
 }

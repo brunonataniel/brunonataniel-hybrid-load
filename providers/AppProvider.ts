@@ -3,7 +3,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import createContextHook from '@nkzw/create-context-hook';
 import { FatigueType, UnitSystem, LiftType, convertWeight } from '@/utils/plateCalculator';
-import { seedCounter } from '@/utils/spotsCounter';
 
 export interface HistoryEntry {
   id: string;
@@ -21,29 +20,16 @@ const STORAGE_KEYS = {
   maxLift: 'hybrid_load_max_lift',
   unit: 'hybrid_load_unit',
   history: 'hybrid_load_history',
-  proUnlocked: 'hybrid_load_pro_unlocked',
 } as const;
 
 const MAX_HISTORY = 5;
-const SEED_KEY = 'hybrid_load_counter_seeded_v2';
 
 export const [AppProvider, useApp] = createContextHook(() => {
   const [maxLift, setMaxLift] = useState<string>('315');
   const [unit, setUnit] = useState<UnitSystem>('lbs');
   const [history, setHistory] = useState<HistoryEntry[]>([]);
-  const [isProUnlocked, setIsProUnlocked] = useState<boolean>(false);
   const [selectedLift, setSelectedLift] = useState<LiftType>('squat');
 
-  useEffect(() => {
-    void AsyncStorage.getItem(SEED_KEY).then((val) => {
-      if (!val) {
-        console.log('[AppProvider] Running one-time counter seed');
-        void seedCounter().then(() => {
-          void AsyncStorage.setItem(SEED_KEY, 'true');
-        });
-      }
-    });
-  }, []);
 
   const storedDataQuery = useQuery({
     queryKey: ['stored-data'],
@@ -53,12 +39,10 @@ export const [AppProvider, useApp] = createContextHook(() => {
         AsyncStorage.getItem(STORAGE_KEYS.unit),
         AsyncStorage.getItem(STORAGE_KEYS.history),
       ]);
-      const storedPro = await AsyncStorage.getItem(STORAGE_KEYS.proUnlocked);
       return {
         maxLift: storedMax ?? '315',
         unit: (storedUnit as UnitSystem) ?? 'lbs',
         history: storedHistory ? (JSON.parse(storedHistory) as HistoryEntry[]) : [],
-        proUnlocked: storedPro === 'true',
       };
     },
     staleTime: Infinity,
@@ -69,7 +53,6 @@ export const [AppProvider, useApp] = createContextHook(() => {
       setMaxLift(storedDataQuery.data.maxLift);
       setUnit(storedDataQuery.data.unit);
       setHistory(storedDataQuery.data.history);
-      setIsProUnlocked(storedDataQuery.data.proUnlocked);
     }
   }, [storedDataQuery.data]);
 
@@ -139,18 +122,6 @@ export const [AppProvider, useApp] = createContextHook(() => {
     saveLift(lift);
   }, [saveLift]);
 
-  const { mutate: savePro } = useMutation({
-    mutationFn: async (value: boolean) => {
-      await AsyncStorage.setItem(STORAGE_KEYS.proUnlocked, String(value));
-      return value;
-    },
-  });
-
-  const unlockPro = useCallback(() => {
-    setIsProUnlocked(true);
-    savePro(true);
-  }, [savePro]);
-
   const clearHistory = useCallback(() => {
     setHistory([]);
     saveHistory([]);
@@ -162,12 +133,10 @@ export const [AppProvider, useApp] = createContextHook(() => {
     history,
     isLoading: storedDataQuery.isLoading,
     updateMaxLift,
-    isProUnlocked,
     updateUnit,
     addHistoryEntry,
     clearHistory,
-    unlockPro,
     selectedLift,
     updateLift,
-  }), [maxLift, unit, history, storedDataQuery.isLoading, updateMaxLift, isProUnlocked, updateUnit, addHistoryEntry, clearHistory, unlockPro, selectedLift, updateLift]);
+  }), [maxLift, unit, history, storedDataQuery.isLoading, updateMaxLift, updateUnit, addHistoryEntry, clearHistory, selectedLift, updateLift]);
 });

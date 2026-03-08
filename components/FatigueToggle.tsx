@@ -9,8 +9,6 @@ import { Colors } from '@/constants/colors';
 interface FatigueCheckInProps {
   value: FatigueType[];
   onChange: (types: FatigueType[]) => void;
-  isProUnlocked: boolean;
-  onProGateTriggered: () => void;
   selectedLift: LiftType;
 }
 
@@ -149,7 +147,7 @@ function FatigueOption({
   );
 }
 
-export default React.memo(function FatigueCheckIn({ value, onChange, isProUnlocked, onProGateTriggered, selectedLift }: FatigueCheckInProps) {
+export default React.memo(function FatigueCheckIn({ value, onChange, selectedLift }: FatigueCheckInProps) {
   const totalReduction = getFatigueReductionPercent(value, selectedLift);
   const totalOpacity = useRef(new Animated.Value(totalReduction > 0 ? 1 : 0)).current;
   const badgeScale = useRef(new Animated.Value(1)).current;
@@ -177,16 +175,9 @@ export default React.memo(function FatigueCheckIn({ value, onChange, isProUnlock
     if (isActive) {
       onChange(value.filter((t) => t !== type));
     } else {
-      if (!isProUnlocked && value.length >= 1) {
-        if (Platform.OS !== 'web') {
-          void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-        }
-        onProGateTriggered();
-        return;
-      }
       onChange([...value, type]);
     }
-  }, [value, onChange, isProUnlocked, onProGateTriggered]);
+  }, [value, onChange]);
 
   return (
     <View style={styles.container}>
