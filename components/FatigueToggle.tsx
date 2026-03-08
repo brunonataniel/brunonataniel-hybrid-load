@@ -172,13 +172,14 @@ export default React.memo(function FatigueCheckIn({ value, onChange, isProUnlock
     if (isActive) {
       onChange(value.filter((t) => t !== type));
     } else {
-      if (!isProUnlocked && value.length >= 1) {
-        if (Platform.OS !== 'web') {
-          void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-        }
-        onProGateTriggered();
-        return;
-      }
+      // TODO: RE-ENABLE PRO GATE AFTER AUDIT
+      // if (!isProUnlocked && value.length >= 1) {
+      //   if (Platform.OS !== 'web') {
+      //     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+      //   }
+      //   onProGateTriggered();
+      //   return;
+      // }
       onChange([...value, type]);
     }
   }, [value, onChange, isProUnlocked, onProGateTriggered]);
