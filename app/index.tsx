@@ -32,7 +32,7 @@ const ROADMAP_FEATURES = [
   {
     icon: ShieldHalf,
     title: 'VOLUME & SET OPTIMIZATION',
-    description: "We don't just change the weight. The engine suggests set and rep adjustments to prevent overtraining and CNS burnout on high-fatigue days.",
+    description: "We don't just change the weight. The engine suggests set and rep adjustments to account for fatigue and CNS burnout on high-fatigue days.",
   },
   {
     icon: Dumbbell,
@@ -54,8 +54,8 @@ const VALUE_PROPS = [
   },
   {
     icon: ShieldCheck,
-    title: 'OVERTRAINING PROTECTION',
-    description: 'The engine caps fatigue penalties with diminishing returns. More stress doesn\'t mean more punishment — it means smarter math that keeps you training instead of sitting out.',
+    title: 'SMART LOAD SCALING',
+    description: 'The engine caps fatigue penalties with diminishing returns. More activity doesn\'t mean more punishment — it means smarter math that adjusts your load intelligently.',
   },
 ];
 
@@ -271,7 +271,7 @@ export default function LandingScreen() {
           </Text>
 
           <Text style={styles.heroSubtext}>
-            Your recovery changes daily. Your math should too. Recalibrate your load based on real-time fatigue.
+            Your readiness changes daily. Your math should too. Recalibrate your load based on real-time fatigue.
           </Text>
 
           <Animated.View style={[
@@ -562,10 +562,10 @@ export default function LandingScreen() {
 
         <View style={styles.disclaimerWrap}>
           <Text style={styles.disclaimerText}>
-            Rechtlicher Hinweis: Dieser Rechner dient ausschließlich Informations- und Trainingszwecken. Er stellt keine medizinische Diagnose oder Beratung dar.
+            Rechtlicher Hinweis: Dieser Rechner dient ausschließlich Informations- und Trainingszwecken. Er stellt keine medizinische Diagnose oder Beratung dar. HybridLoad ist ein Trainingsrechner, kein medizinisches oder gesundheitliches Überwachungsgerät.
           </Text>
           <Text style={styles.disclaimerTextEn}>
-            Disclaimer: This calculator is for informational and training purposes only. It does not constitute medical diagnosis or advice.
+            Disclaimer: This calculator is for informational and training purposes only. It does not constitute medical diagnosis or advice. HybridLoad is a training calculator, not a medical or health monitoring device.
           </Text>
         </View>
       </ScrollView>
