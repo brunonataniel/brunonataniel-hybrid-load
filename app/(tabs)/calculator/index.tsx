@@ -10,10 +10,12 @@ import {
   Animated,
   KeyboardAvoidingView,
   Easing,
+  Modal,
+  Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
-import { Weight, RotateCcw, Info, Shield, FileText, Building2 } from 'lucide-react-native';
+import { Weight, RotateCcw, Info, Shield, FileText, Building2, X } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { calculatePlates, FatigueType, getPlateColor, getPlateLabel, PlateBreakdown, UnitSystem, getBarWeight, getFatigueReductionPercent } from '@/utils/plateCalculator';
@@ -23,6 +25,126 @@ import ProGateModal from '@/components/ProGateModal';
 import { useApp } from '@/providers/AppProvider';
 
 const PERCENTAGES = [50, 60, 70, 80, 90, 100] as const;
+
+function EngineTooltip() {
+  const [visible, setVisible] = useState<boolean>(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  const show = useCallback(() => {
+    setVisible(true);
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 180,
+      useNativeDriver: true,
+    }).start();
+  }, [fadeAnim]);
+
+  const hide = useCallback(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 120,
+      useNativeDriver: true,
+    }).start(() => setVisible(false));
+  }, [fadeAnim]);
+
+  const toggle = useCallback(() => {
+    if (visible) {
+      hide();
+    } else {
+      show();
+    }
+  }, [visible, show, hide]);
+
+  return (
+    <>
+      <TouchableOpacity
+        testID="engine-info-icon"
+        onPress={toggle}
+        activeOpacity={0.6}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        style={tooltipStyles.iconTouch}
+      >
+        <Info size={14} color={Colors.textTertiary} />
+      </TouchableOpacity>
+
+      {visible && (
+        <Modal
+          transparent
+          animationType="none"
+          visible={visible}
+          onRequestClose={hide}
+          statusBarTranslucent
+        >
+          <Pressable style={tooltipStyles.overlay} onPress={hide}>
+            <Animated.View style={[tooltipStyles.tooltipBox, { opacity: fadeAnim }]}>
+              <View style={tooltipStyles.tooltipHeader}>
+                <Text style={tooltipStyles.tooltipTitle}>HYBRID LOAD ENGINE</Text>
+                <TouchableOpacity onPress={hide} activeOpacity={0.6} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                  <X size={16} color={Colors.textSecondary} />
+                </TouchableOpacity>
+              </View>
+              <View style={tooltipStyles.divider} />
+              <Text style={tooltipStyles.tooltipBody}>
+                This isn't a simple percentage of your Max. The Engine calculates your "Target Capacity," automatically down-adjusting the load based on your selected Fatigue Check-In inputs (e.g., Combat, HIIT).
+              </Text>
+            </Animated.View>
+          </Pressable>
+        </Modal>
+      )}
+    </>
+  );
+}
+
+const tooltipStyles = StyleSheet.create({
+  iconTouch: {
+    marginLeft: 6,
+    padding: 2,
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+  },
+  tooltipBox: {
+    backgroundColor: '#1C1C1E',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: 'rgba(204, 255, 0, 0.35)',
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    maxWidth: 360,
+    width: '100%',
+    shadowColor: '#CCFF00',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.12,
+    shadowRadius: 20,
+    elevation: 12,
+  },
+  tooltipHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  tooltipTitle: {
+    fontSize: 12,
+    fontWeight: '800' as const,
+    letterSpacing: 1.8,
+    color: '#CCFF00',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    marginVertical: 12,
+  },
+  tooltipBody: {
+    fontSize: 14,
+    lineHeight: 21,
+    color: '#FFFFFF',
+    fontWeight: '400' as const,
+  },
+});
 
 function PlateRow({ plate, unit }: { plate: PlateBreakdown; unit: UnitSystem }) {
   const color = getPlateColor(plate.weight, unit);
@@ -270,7 +392,10 @@ export default function CalculatorScreen() {
             </View>
 
             <View style={styles.percentSection}>
-              <Text style={styles.sectionLabel}>TARGET %</Text>
+              <View style={styles.sectionLabelRow}>
+                <Text style={styles.sectionLabel}>TARGET %</Text>
+                <EngineTooltip />
+              </View>
               <View style={styles.percentPillRow}>
                 {PERCENTAGES.map((pct) => {
                   const isActive = pct === targetPercent;
@@ -505,6 +630,10 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
     color: Colors.textSecondary,
     marginLeft: 4,
+  },
+  sectionLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   inputRow: {
     flexDirection: 'row',
