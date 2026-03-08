@@ -372,6 +372,41 @@ export default function CalculatorScreen() {
                   CNS ADJUSTMENT: -{totalReductionPercent}%
                 </Text>
               </Animated.View>
+
+              {activeFatigues.length === 0 && numericMax > 0 && (
+                <Text style={styles.freshText}>Fresh and ready. Full send.</Text>
+              )}
+
+              {result.breakdown.length > 0 && (
+                <View style={styles.breakdownContainer}>
+                  {result.breakdown.map((item) => (
+                    <View key={item.type} style={styles.breakdownRow}>
+                      <View style={[
+                        styles.breakdownRoleBadge,
+                        item.role === 'anchor' ? styles.breakdownAnchorBadge : styles.breakdownModBadge,
+                      ]}>
+                        <Text style={[
+                          styles.breakdownRoleText,
+                          item.role === 'anchor' ? styles.breakdownAnchorText : styles.breakdownModText,
+                        ]}>
+                          {item.role === 'anchor' ? 'ANCHOR' : 'MOD'}
+                        </Text>
+                      </View>
+                      <Text style={styles.breakdownLabel}>{item.label}</Text>
+                      <Text style={styles.breakdownValue}>-{item.value}%</Text>
+                    </View>
+                  ))}
+                  {result.volumeMultiplier > 0 && (
+                    <View style={styles.breakdownRow}>
+                      <View style={[styles.breakdownRoleBadge, styles.breakdownVolBadge]}>
+                        <Text style={[styles.breakdownRoleText, styles.breakdownVolText]}>VOL</Text>
+                      </View>
+                      <Text style={styles.breakdownLabel}>Overload</Text>
+                      <Text style={styles.breakdownValue}>-{result.volumeMultiplier}%</Text>
+                    </View>
+                  )}
+                </View>
+              )}
             </Animated.View>
 
             <View style={styles.inputSection}>
@@ -793,5 +828,62 @@ const styles = StyleSheet.create({
     borderRadius: 1.25,
     backgroundColor: Colors.textTertiary,
     opacity: 0.5,
+  },
+  freshText: {
+    fontSize: 13,
+    color: Colors.textTertiary,
+    marginTop: 8,
+    letterSpacing: 0.3,
+  },
+  breakdownContainer: {
+    marginTop: 12,
+    gap: 6,
+    width: '100%',
+    paddingHorizontal: 20,
+  },
+  breakdownRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center',
+    gap: 8,
+  },
+  breakdownRoleBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    minWidth: 52,
+    alignItems: 'center' as const,
+  },
+  breakdownAnchorBadge: {
+    backgroundColor: 'rgba(204, 255, 0, 0.12)',
+  },
+  breakdownModBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  breakdownVolBadge: {
+    backgroundColor: 'rgba(255, 149, 0, 0.12)',
+  },
+  breakdownRoleText: {
+    fontSize: 9,
+    fontWeight: '700' as const,
+    letterSpacing: 0.8,
+  },
+  breakdownAnchorText: {
+    color: Colors.accent,
+  },
+  breakdownModText: {
+    color: Colors.textSecondary,
+  },
+  breakdownVolText: {
+    color: '#FF9500',
+  },
+  breakdownLabel: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    flex: 1,
+  },
+  breakdownValue: {
+    fontSize: 12,
+    fontWeight: '600' as const,
+    color: Colors.textPrimary,
   },
 });
