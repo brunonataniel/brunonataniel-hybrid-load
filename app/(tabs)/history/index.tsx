@@ -47,8 +47,8 @@ function formatDate(timestamp: number): string {
 }
 
 const HistoryCard = React.memo(function HistoryCard({ item }: { item: HistoryEntry }) {
-  const liftLabel = LIFT_LABELS[item.lift] ?? item.lift;
-  const liftShort = LIFT_SHORT[item.lift] ?? item.lift.toUpperCase();
+  const liftLabel = LIFT_LABELS[item.lift] ?? item.lift ?? 'Unknown';
+  const liftShort = LIFT_SHORT[item.lift] ?? (item.lift ? item.lift.toUpperCase() : '???');
   const unitLabel = item.unit === 'lbs' ? 'LBS' : 'KG';
 
   return (
