@@ -6,6 +6,16 @@ export type LiftType = 'squat' | 'bench' | 'deadlift' | 'overhead';
 
 export type FatigueState = 'fresh' | 'standard' | 'endurance';
 
+export type IntensityLevel = 'light' | 'moderate' | 'hard';
+
+export const INTENSITY_MULTIPLIERS: Record<IntensityLevel, number> = {
+  light: 0.5,
+  moderate: 1.0,
+  hard: 1.3,
+};
+
+export type IntensityMap = Partial<Record<FatigueType, IntensityLevel>>;
+
 export type ExerciseCategory = 'lower' | 'upper';
 
 export type CNSProfile = 'high' | 'low';
@@ -81,12 +91,20 @@ export function getBaseValue(type: FatigueType, lift: LiftType): number {
   return BASE_VALUES[category][type];
 }
 
-function findAnchor(selectedTags: FatigueType[], lift: LiftType): FatigueType | null {
-  if (selectedTags.length === 0) return null;
+export function getScaledBaseValue(type: FatigueType, lift: LiftType, intensity: IntensityLevel = 'moderate'): number {
   const category = getExerciseCategory(lift);
-  return selectedTags.reduce((best, tag) =>
-    BASE_VALUES[category][tag] > BASE_VALUES[category][best] ? tag : best
-  );
+  const base = BASE_VALUES[category][type];
+  const scaled = base * INTENSITY_MULTIPLIERS[intensity];
+  return Math.round(scaled);
+}
+
+function findAnchorWithIntensity(selectedTags: FatigueType[], lift: LiftType, intensities: IntensityMap = {}): FatigueType | null {
+  if (selectedTags.length === 0) return null;
+  return selectedTags.reduce((best, tag) => {
+    const bestScaled = getScaledBaseValue(best, lift, intensities[best] ?? 'moderate');
+    const tagScaled = getScaledBaseValue(tag, lift, intensities[tag] ?? 'moderate');
+    return tagScaled > bestScaled ? tag : best;
+  });
 }
 
 function getEffectiveModifier(tag: FatigueType, anchorCNS: CNSProfile): number {
@@ -94,7 +112,7 @@ function getEffectiveModifier(tag: FatigueType, anchorCNS: CNSProfile): number {
   return anchorCNS === 'low' ? base + 1 : base;
 }
 
-export function computeBreakdown(activeFatigues: FatigueType[], lift: LiftType = 'squat'): {
+export function computeBreakdown(activeFatigues: FatigueType[], lift: LiftType = 'squat', intensities: IntensityMap = {}): {
   breakdown: FatigueBreakdownItem[];
   volumeMultiplier: number;
   totalPenalty: number;
@@ -104,9 +122,8 @@ export function computeBreakdown(activeFatigues: FatigueType[], lift: LiftType =
     return { breakdown: [], volumeMultiplier: 0, totalPenalty: 0, anchor: null };
   }
 
-  const anchor = findAnchor(activeFatigues, lift)!;
-  const category = getExerciseCategory(lift);
-  const anchorBase = BASE_VALUES[category][anchor];
+  const anchor = findAnchorWithIntensity(activeFatigues, lift, intensities)!;
+  const anchorScaledBase = getScaledBaseValue(anchor, lift, intensities[anchor] ?? 'moderate');
   const anchorCNS = CNS_PROFILE[anchor];
 
   const breakdown: FatigueBreakdownItem[] = [];
@@ -114,7 +131,7 @@ export function computeBreakdown(activeFatigues: FatigueType[], lift: LiftType =
     type: anchor,
     label: FATIGUE_LABELS[anchor],
     role: 'anchor',
-    value: anchorBase,
+    value: anchorScaledBase,
   });
 
   let modTotal = 0;
@@ -131,20 +148,20 @@ export function computeBreakdown(activeFatigues: FatigueType[], lift: LiftType =
   }
 
   const volumeMultiplier = Math.max(0, activeFatigues.length - 3);
-  const totalPenalty = anchorBase + modTotal + volumeMultiplier;
+  const totalPenalty = anchorScaledBase + modTotal + volumeMultiplier;
 
-  console.log(`[SystemicEngine] Anchor: ${anchor} (-${anchorBase}%), Modifiers: ${modifiers.map(m => `${m}(-${getEffectiveModifier(m, anchorCNS)}%)`).join(', ')}, Volume: -${volumeMultiplier}%, Total: -${totalPenalty}%`);
+  console.log(`[SystemicEngine] Anchor: ${anchor} (-${anchorScaledBase}%), Modifiers: ${modifiers.map(m => `${m}(-${getEffectiveModifier(m, anchorCNS)}%)`).join(', ')}, Volume: -${volumeMultiplier}%, Total: -${totalPenalty}%`);
 
   return { breakdown, volumeMultiplier, totalPenalty, anchor };
 }
 
-export function computeTotalReduction(activeFatigues: FatigueType[], lift: LiftType = 'squat'): number {
-  const { totalPenalty } = computeBreakdown(activeFatigues, lift);
+export function computeTotalReduction(activeFatigues: FatigueType[], lift: LiftType = 'squat', intensities: IntensityMap = {}): number {
+  const { totalPenalty } = computeBreakdown(activeFatigues, lift, intensities);
   return totalPenalty / 100;
 }
 
-export function getFatigueReductionPercent(activeFatigues: FatigueType[], lift: LiftType = 'squat'): number {
-  const { totalPenalty } = computeBreakdown(activeFatigues, lift);
+export function getFatigueReductionPercent(activeFatigues: FatigueType[], lift: LiftType = 'squat', intensities: IntensityMap = {}): number {
+  const { totalPenalty } = computeBreakdown(activeFatigues, lift, intensities);
   return totalPenalty;
 }
 
@@ -152,20 +169,21 @@ export function getMarginalFatiguePercent(
   fatigueType: FatigueType,
   lift: LiftType,
   activeFatigues: FatigueType[],
+  intensities: IntensityMap = {},
 ): { percent: number; isAdjusted: boolean } {
-  const category = getExerciseCategory(lift);
-  const baseValue = BASE_VALUES[category][fatigueType];
+  const intensity = intensities[fatigueType] ?? 'moderate';
+  const scaledBase = getScaledBaseValue(fatigueType, lift, intensity);
 
   if (activeFatigues.length === 0) {
-    return { percent: baseValue, isAdjusted: false };
+    return { percent: scaledBase, isAdjusted: false };
   }
 
   const isActive = activeFatigues.includes(fatigueType);
 
   if (isActive) {
-    const anchor = findAnchor(activeFatigues, lift)!;
+    const anchor = findAnchorWithIntensity(activeFatigues, lift, intensities)!;
     if (fatigueType === anchor) {
-      return { percent: BASE_VALUES[category][anchor], isAdjusted: false };
+      return { percent: getScaledBaseValue(anchor, lift, intensities[anchor] ?? 'moderate'), isAdjusted: false };
     }
     const anchorCNS = CNS_PROFILE[anchor];
     const mod = getEffectiveModifier(fatigueType, anchorCNS);
@@ -173,9 +191,10 @@ export function getMarginalFatiguePercent(
     return { percent: mod, isAdjusted: true };
   }
 
-  const currentPenalty = computeBreakdown(activeFatigues, lift).totalPenalty;
+  const currentPenalty = computeBreakdown(activeFatigues, lift, intensities).totalPenalty;
   const hypothetical = [...activeFatigues, fatigueType];
-  const newPenalty = computeBreakdown(hypothetical, lift).totalPenalty;
+  const hypotheticalIntensities = { ...intensities, [fatigueType]: 'moderate' as IntensityLevel };
+  const newPenalty = computeBreakdown(hypothetical, lift, hypotheticalIntensities).totalPenalty;
   const delta = newPenalty - currentPenalty;
   console.log(`[MarginalPreview] Inactive ${fatigueType}: delta -${delta}% (current=${currentPenalty}%, hypothetical=${newPenalty}%)`);
   return { percent: delta, isAdjusted: true };
@@ -207,9 +226,10 @@ export function calculatePlates(
   targetPercent: number,
   activeFatigues: FatigueType[],
   unit: UnitSystem = 'lbs',
-  lift: LiftType = 'squat'
+  lift: LiftType = 'squat',
+  intensities: IntensityMap = {}
 ): CalculationResult {
-  const { breakdown, volumeMultiplier, totalPenalty } = computeBreakdown(activeFatigues, lift);
+  const { breakdown, volumeMultiplier, totalPenalty } = computeBreakdown(activeFatigues, lift, intensities);
 
   const targetWeight = (oneRepMax * targetPercent) / 100;
   const adjustedWeight = targetWeight * (1 - totalPenalty / 100);
@@ -293,7 +313,6 @@ export const FATIGUE_OPTIONS: { type: FatigueType; label: string; reduction: str
   { type: 'stairs', label: 'Stairs', reduction: '5%' },
 ];
 
-export function getScaledFatiguePercent(fatigueType: FatigueType, lift: LiftType): number {
-  const category = getExerciseCategory(lift);
-  return BASE_VALUES[category][fatigueType];
+export function getScaledFatiguePercent(fatigueType: FatigueType, lift: LiftType, intensity: IntensityLevel = 'moderate'): number {
+  return getScaledBaseValue(fatigueType, lift, intensity);
 }

@@ -18,7 +18,7 @@ import * as Haptics from 'expo-haptics';
 import { RotateCcw, Info, X } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
-import { calculatePlates, FatigueType, UnitSystem, getFatigueReductionPercent } from '@/utils/plateCalculator';
+import { calculatePlates, FatigueType, UnitSystem, getFatigueReductionPercent, IntensityLevel, IntensityMap } from '@/utils/plateCalculator';
 import FatigueCheckIn from '@/components/FatigueToggle';
 import LiftSelector from '@/components/LiftSelector';
 import { useApp } from '@/providers/AppProvider';
@@ -191,6 +191,7 @@ export default function CalculatorScreen() {
   const router = useRouter();
   const [targetPercent, setTargetPercent] = useState<number>(80);
   const [activeFatigues, setActiveFatigues] = useState<FatigueType[]>([]);
+  const [intensities, setIntensities] = useState<IntensityMap>({});
   const weightAnim = useRef(new Animated.Value(1)).current;
 
   const cnsOpacity = useRef(new Animated.Value(0)).current;
@@ -201,13 +202,13 @@ export default function CalculatorScreen() {
   }, [maxLift]);
 
   const result = useMemo(
-    () => calculatePlates(numericMax, targetPercent, activeFatigues, unit, selectedLift),
-    [numericMax, targetPercent, activeFatigues, unit, selectedLift]
+    () => calculatePlates(numericMax, targetPercent, activeFatigues, unit, selectedLift, intensities),
+    [numericMax, targetPercent, activeFatigues, unit, selectedLift, intensities]
   );
 
   const totalReductionPercent = useMemo(
-    () => getFatigueReductionPercent(activeFatigues, selectedLift),
-    [activeFatigues, selectedLift]
+    () => getFatigueReductionPercent(activeFatigues, selectedLift, intensities),
+    [activeFatigues, selectedLift, intensities]
   );
 
   useEffect(() => {
@@ -231,8 +232,28 @@ export default function CalculatorScreen() {
     ]).start();
   }, [weightAnim]);
 
+  const handleIntensityChange = useCallback((type: FatigueType, level: IntensityLevel) => {
+    setIntensities(prev => ({ ...prev, [type]: level }));
+    Animated.sequence([
+      Animated.timing(weightAnim, { toValue: 0.97, duration: 80, useNativeDriver: true }),
+      Animated.timing(weightAnim, { toValue: 1, duration: 150, useNativeDriver: true }),
+    ]).start();
+  }, [weightAnim]);
+
   const handleFatigueChange = useCallback((types: FatigueType[]) => {
-    setActiveFatigues(types);
+    setActiveFatigues(prev => {
+      const removed = prev.filter(t => !types.includes(t));
+      if (removed.length > 0) {
+        setIntensities(current => {
+          const next = { ...current };
+          for (const r of removed) {
+            delete next[r];
+          }
+          return next;
+        });
+      }
+      return types;
+    });
     Animated.sequence([
       Animated.timing(weightAnim, { toValue: 0.97, duration: 80, useNativeDriver: true }),
       Animated.timing(weightAnim, { toValue: 1, duration: 150, useNativeDriver: true }),
@@ -259,6 +280,7 @@ export default function CalculatorScreen() {
     updateMaxLift(unit === 'lbs' ? '315' : '140');
     setTargetPercent(80);
     setActiveFatigues([]);
+    setIntensities({});
   }, [unit, updateMaxLift]);
 
 
@@ -429,6 +451,8 @@ export default function CalculatorScreen() {
               value={activeFatigues}
               onChange={handleFatigueChange}
               selectedLift={selectedLift}
+              intensities={intensities}
+              onIntensityChange={handleIntensityChange}
             />
 
             {numericMax > 0 && result.plates.length > 0 && (
