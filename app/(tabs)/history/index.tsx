@@ -84,9 +84,9 @@ const HistoryCard = React.memo(function HistoryCard({ item }: { item: HistoryEnt
           )}
         </View>
       </View>
-      {item.fatigues.length > 0 && (
+      {(item.fatigues?.length ?? 0) > 0 && (
         <View style={styles.fatigueRow}>
-          {item.fatigues.map((f) => (
+          {(item.fatigues ?? []).map((f) => (
             <View key={f} style={styles.fatigueChip}>
               <Text style={styles.fatigueChipText}>{f.charAt(0).toUpperCase() + f.slice(1)}</Text>
             </View>
