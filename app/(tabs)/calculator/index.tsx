@@ -15,14 +15,14 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
-import { RotateCcw, Info, X, Lock, Bell } from 'lucide-react-native';
+import { RotateCcw, Info, X } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { calculatePlates, FatigueType, UnitSystem, getFatigueReductionPercent } from '@/utils/plateCalculator';
 import FatigueCheckIn from '@/components/FatigueToggle';
 import LiftSelector from '@/components/LiftSelector';
 import { useApp } from '@/providers/AppProvider';
-import ProUnlockModal from '@/components/ProUnlockModal';
+import BarbellVisual from '@/components/BarbellVisual';
 
 const PERCENTAGES = [50, 60, 70, 80, 90, 100] as const;
 
@@ -187,8 +187,7 @@ function useCountingAnimation(targetValue: number, duration: number = 350) {
 }
 
 export default function CalculatorScreen() {
-  const { maxLift, unit, updateMaxLift, updateUnit, selectedLift, updateLift } = useApp();
-  const [showProModal, setShowProModal] = useState<boolean>(false);
+  const { maxLift, unit, updateMaxLift, updateUnit, selectedLift, updateLift, addHistoryEntry } = useApp();
   const router = useRouter();
   const [targetPercent, setTargetPercent] = useState<number>(80);
   const [activeFatigues, setActiveFatigues] = useState<FatigueType[]>([]);
@@ -432,40 +431,47 @@ export default function CalculatorScreen() {
               selectedLift={selectedLift}
             />
 
-            <View style={styles.lockedSection}>
-              <View style={styles.lockedPreview}>
-                <View style={styles.blurredBarbell}>
-                  <View style={styles.blurCollar} />
-                  <View style={styles.blurPlate} />
-                  <View style={styles.blurPlateSmall} />
-                  <View style={styles.blurSleeve} />
-                  <View style={styles.blurBar} />
-                  <View style={styles.blurSleeve} />
-                  <View style={styles.blurPlateSmall} />
-                  <View style={styles.blurPlate} />
-                  <View style={styles.blurCollar} />
-                </View>
-                <View style={styles.lockOverlay}>
-                  <View style={styles.lockIconWrap}>
-                    <Lock size={28} color={Colors.accent} strokeWidth={2} />
+            {numericMax > 0 && result.plates.length > 0 && (
+              <View style={styles.plateSection}>
+                <Text style={styles.sectionLabel}>PLATES PER SIDE</Text>
+                <View style={styles.plateSurface}>
+                  <BarbellVisual plates={result.plates} unit={unit} lift={selectedLift} />
+                  <View style={styles.plateBreakdownList}>
+                    {result.plates.map((p) => (
+                      <View key={p.weight} style={styles.plateBreakdownRow}>
+                        <View style={styles.plateCountBadge}>
+                          <Text style={styles.plateCountText}>{p.count}×</Text>
+                        </View>
+                        <Text style={styles.plateWeightText}>
+                          {p.weight % 1 === 0 ? p.weight : p.weight.toFixed(p.weight === 1.25 ? 2 : 1)} {unit === 'lbs' ? 'lb' : 'kg'}
+                        </Text>
+                      </View>
+                    ))}
                   </View>
                 </View>
+                <TouchableOpacity
+                  testID="save-to-history"
+                  style={styles.saveButton}
+                  onPress={() => {
+                    addHistoryEntry({
+                      lift: selectedLift,
+                      oneRepMax: numericMax,
+                      targetPercent,
+                      fatigues: activeFatigues,
+                      finalWeight: result.finalWeight,
+                      unit,
+                      totalPenalty: result.totalPenalty,
+                    });
+                    if (Platform.OS !== 'web') {
+                      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                    }
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.saveButtonText}>SAVE TO HISTORY</Text>
+                </TouchableOpacity>
               </View>
-              <View style={styles.proBadge}>
-                <Text style={styles.proBadgeText}>PRO</Text>
-              </View>
-              <Text style={styles.lockedText}>See your exact plate setup</Text>
-              <Text style={styles.comingSoonText}>Coming soon</Text>
-              <TouchableOpacity
-                testID="notify-pro-plates"
-                style={styles.notifyButton}
-                onPress={() => setShowProModal(true)}
-                activeOpacity={0.8}
-              >
-                <Bell size={14} color="#0D0D0D" strokeWidth={2.5} />
-                <Text style={styles.notifyButtonText}>NOTIFY ME</Text>
-              </TouchableOpacity>
-            </View>
+            )}
 
             <View style={styles.legalFooter}>
               <View style={styles.legalDivider} />
@@ -483,7 +489,7 @@ export default function CalculatorScreen() {
         </KeyboardAvoidingView>
       </SafeAreaView>
 
-            <ProUnlockModal visible={showProModal} onClose={() => setShowProModal(false)} />
+
     </View>
   );
 }
@@ -735,105 +741,55 @@ const styles = StyleSheet.create({
     marginTop: 8,
     letterSpacing: 0.3,
   },
-  lockedSection: {
-    alignItems: 'center' as const,
-    gap: 14,
-    paddingVertical: 8,
+  plateSection: {
+    gap: 10,
   },
-  lockedPreview: {
-    width: '100%' as const,
-    height: 108,
-    alignItems: 'center' as const,
+  plateSurface: {
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.04)',
+    paddingBottom: 16,
+    overflow: 'hidden' as const,
+  },
+  plateBreakdownList: {
+    flexDirection: 'row' as const,
+    flexWrap: 'wrap' as const,
+    gap: 8,
+    paddingHorizontal: 16,
     justifyContent: 'center' as const,
-    position: 'relative' as const,
   },
-  blurredBarbell: {
+  plateBreakdownRow: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    opacity: 0.15,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    gap: 4,
   },
-  blurBar: {
-    width: 84,
-    height: 6,
-    backgroundColor: '#4A4A4C',
-    borderRadius: 3,
-  },
-  blurSleeve: {
-    width: 12,
-    height: 11,
-    backgroundColor: '#3A3A3C',
-    borderRadius: 2,
-  },
-  blurCollar: {
-    width: 6,
-    height: 17,
-    backgroundColor: '#2C2C2E',
-    borderRadius: 2,
-  },
-  blurPlate: {
-    width: 14,
-    height: 72,
-    backgroundColor: '#636366',
-    borderRadius: 3,
-  },
-  blurPlateSmall: {
-    width: 14,
-    height: 52,
-    backgroundColor: '#636366',
-    borderRadius: 3,
-  },
-  lockOverlay: {
-    ...StyleSheet.absoluteFillObject,
+  plateCountBadge: {
+    minWidth: 22,
     alignItems: 'center' as const,
-    justifyContent: 'center' as const,
   },
-  lockIconWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: 'rgba(204, 255, 0, 0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(204, 255, 0, 0.2)',
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-  },
-  lockedText: {
-    fontSize: 14,
-    fontWeight: '500' as const,
-    color: Colors.textSecondary,
-    textAlign: 'center' as const,
-  },
-  proBadge: {
-    backgroundColor: 'rgba(204, 255, 0, 0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(204, 255, 0, 0.25)',
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-  },
-  proBadgeText: {
-    fontSize: 11,
-    fontWeight: '800' as const,
-    letterSpacing: 1.5,
+  plateCountText: {
+    fontSize: 13,
+    fontWeight: '700' as const,
     color: Colors.accent,
   },
-  comingSoonText: {
-    fontSize: 12,
+  plateWeightText: {
+    fontSize: 13,
     fontWeight: '500' as const,
-    color: Colors.textTertiary,
-    letterSpacing: 0.3,
+    color: Colors.textSecondary,
   },
-  notifyButton: {
-    flexDirection: 'row' as const,
+  saveButton: {
     backgroundColor: Colors.accent,
     borderRadius: 12,
     paddingVertical: 14,
-    paddingHorizontal: 28,
     alignItems: 'center' as const,
-    gap: 8,
+    justifyContent: 'center' as const,
   },
-  notifyButtonText: {
+  saveButtonText: {
     fontSize: 13,
     fontWeight: '800' as const,
     letterSpacing: 1.5,

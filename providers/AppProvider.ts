@@ -2,11 +2,24 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import createContextHook from '@nkzw/create-context-hook';
-import { UnitSystem, LiftType, convertWeight } from '@/utils/plateCalculator';
+import { UnitSystem, LiftType, FatigueType, convertWeight } from '@/utils/plateCalculator';
+
+export interface HistoryEntry {
+  id: string;
+  timestamp: number;
+  lift: LiftType;
+  oneRepMax: number;
+  targetPercent: number;
+  fatigues: FatigueType[];
+  finalWeight: number;
+  unit: UnitSystem;
+  totalPenalty: number;
+}
 
 const STORAGE_KEYS = {
   maxLift: 'hybrid_load_max_lift',
   unit: 'hybrid_load_unit',
+  history: 'hybrid_load_history',
 } as const;
 
 export const [AppProvider, useApp] = createContextHook(() => {
@@ -82,6 +95,48 @@ export const [AppProvider, useApp] = createContextHook(() => {
     saveLift(lift);
   }, [saveLift]);
 
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+
+  const historyQuery = useQuery({
+    queryKey: ['history'],
+    queryFn: async () => {
+      const stored = await AsyncStorage.getItem(STORAGE_KEYS.history);
+      return stored ? (JSON.parse(stored) as HistoryEntry[]) : [];
+    },
+    staleTime: Infinity,
+  });
+
+  useEffect(() => {
+    if (historyQuery.data) {
+      setHistory(historyQuery.data);
+    }
+  }, [historyQuery.data]);
+
+  const { mutate: saveHistory } = useMutation({
+    mutationFn: async (entries: HistoryEntry[]) => {
+      await AsyncStorage.setItem(STORAGE_KEYS.history, JSON.stringify(entries));
+      return entries;
+    },
+  });
+
+  const addHistoryEntry = useCallback((entry: Omit<HistoryEntry, 'id' | 'timestamp'>) => {
+    const newEntry: HistoryEntry = {
+      ...entry,
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      timestamp: Date.now(),
+    };
+    const updated = [newEntry, ...history].slice(0, 100);
+    setHistory(updated);
+    saveHistory(updated);
+    console.log('[History] Entry added:', newEntry.lift, newEntry.finalWeight, newEntry.unit);
+  }, [history, saveHistory]);
+
+  const clearHistory = useCallback(() => {
+    setHistory([]);
+    saveHistory([]);
+    console.log('[History] Cleared');
+  }, [saveHistory]);
+
   return useMemo(() => ({
     maxLift,
     unit,
@@ -90,5 +145,8 @@ export const [AppProvider, useApp] = createContextHook(() => {
     updateUnit,
     selectedLift,
     updateLift,
-  }), [maxLift, unit, storedDataQuery.isLoading, updateMaxLift, updateUnit, selectedLift, updateLift]);
+    history,
+    addHistoryEntry,
+    clearHistory,
+  }), [maxLift, unit, storedDataQuery.isLoading, updateMaxLift, updateUnit, selectedLift, updateLift, history, addHistoryEntry, clearHistory]);
 });
