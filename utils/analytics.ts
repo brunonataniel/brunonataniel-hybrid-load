@@ -34,17 +34,16 @@ export function injectPlausibleScript() {
   if (Platform.OS !== 'web') return;
   if (typeof document === 'undefined') return;
 
-  const existing = document.querySelector('script[data-domain="hybridload.com"]');
+  const existing = document.querySelector('script[src*="plausible.io"]');
   if (existing) return;
 
   const script = document.createElement('script');
-  script.defer = true;
-  script.setAttribute('data-domain', 'hybridload.com');
-  script.src = 'https://plausible.io/js/script.js';
+  script.async = true;
+  script.src = 'https://plausible.io/js/pa-Z4we91_lk4HasYNOFMFPj.js';
   document.head.appendChild(script);
 
   const inline = document.createElement('script');
-  inline.textContent = 'window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }';
+  inline.textContent = 'window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};plausible.init()';
   document.head.appendChild(inline);
 
   console.log('[Analytics] Plausible script injected');
