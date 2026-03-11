@@ -18,11 +18,12 @@ import * as Haptics from 'expo-haptics';
 import { RotateCcw, Info, X } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
-import { calculatePlates, FatigueType, UnitSystem, getFatigueReductionPercent, IntensityLevel, IntensityMap } from '@/utils/plateCalculator';
+import { calculatePlates, FatigueType, LiftType, UnitSystem, getFatigueReductionPercent, IntensityLevel, IntensityMap } from '@/utils/plateCalculator';
 import FatigueCheckIn from '@/components/FatigueToggle';
 import LiftSelector from '@/components/LiftSelector';
 import { useApp } from '@/providers/AppProvider';
 import BarbellVisual from '@/components/BarbellVisual';
+import { trackExerciseSelected, trackFatigueTagSelected, trackIntensityChanged, trackCalculationCompleted, trackUnitToggled, resetCalculationKey } from '@/utils/analytics';
 
 const PERCENTAGES = [50, 60, 70, 80, 90, 100] as const;
 
@@ -233,6 +234,7 @@ export default function CalculatorScreen() {
   }, [weightAnim]);
 
   const handleIntensityChange = useCallback((type: FatigueType, level: IntensityLevel) => {
+    trackIntensityChanged(type, level);
     setIntensities(prev => ({ ...prev, [type]: level }));
     Animated.sequence([
       Animated.timing(weightAnim, { toValue: 0.97, duration: 80, useNativeDriver: true }),
@@ -242,7 +244,13 @@ export default function CalculatorScreen() {
 
   const handleFatigueChange = useCallback((types: FatigueType[]) => {
     setActiveFatigues(prev => {
+      const added = types.filter(t => !prev.includes(t));
       const removed = prev.filter(t => !types.includes(t));
+      if (added.length > 0) {
+        for (const a of added) {
+          trackFatigueTagSelected(a, types.length);
+        }
+      }
       if (removed.length > 0) {
         setIntensities(current => {
           const next = { ...current };
@@ -266,12 +274,24 @@ export default function CalculatorScreen() {
     if (Platform.OS !== 'web') {
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
+    trackUnitToggled(newUnit);
     updateUnit(newUnit);
     Animated.sequence([
       Animated.timing(weightAnim, { toValue: 0.95, duration: 100, useNativeDriver: true }),
       Animated.timing(weightAnim, { toValue: 1, duration: 200, useNativeDriver: true }),
     ]).start();
   }, [updateUnit, weightAnim]);
+
+  const handleLiftChange = useCallback((lift: LiftType) => {
+    trackExerciseSelected(lift);
+    updateLift(lift);
+  }, [updateLift]);
+
+  useEffect(() => {
+    if (numericMax > 0 && activeFatigues.length > 0) {
+      trackCalculationCompleted(selectedLift, activeFatigues.length, totalReductionPercent);
+    }
+  }, [numericMax, activeFatigues, selectedLift, totalReductionPercent]);
 
   const handleReset = useCallback(() => {
     if (Platform.OS !== 'web') {
@@ -281,6 +301,7 @@ export default function CalculatorScreen() {
     setTargetPercent(80);
     setActiveFatigues([]);
     setIntensities({});
+    resetCalculationKey();
   }, [unit, updateMaxLift]);
 
 
@@ -444,7 +465,7 @@ export default function CalculatorScreen() {
 
             <LiftSelector
               value={selectedLift}
-              onChange={updateLift}
+              onChange={handleLiftChange}
             />
 
             <FatigueCheckIn

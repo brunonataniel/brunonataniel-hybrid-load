@@ -15,13 +15,15 @@ import { X, Bell } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
+import { trackNotifyMeTapped, trackEmailSubmittedPro } from '@/utils/analytics';
 
 interface ProNotifyModalProps {
   visible: boolean;
   onClose: () => void;
+  source?: 'plate_visualizer' | 'history_tab';
 }
 
-export default function ProUnlockModal({ visible, onClose }: ProNotifyModalProps) {
+export default function ProUnlockModal({ visible, onClose, source = 'plate_visualizer' }: ProNotifyModalProps) {
   const router = useRouter();
   const [email, setEmail] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -31,12 +33,13 @@ export default function ProUnlockModal({ visible, onClose }: ProNotifyModalProps
 
   const handleShow = useCallback(() => {
     setConfirmed(false);
+    trackNotifyMeTapped(source);
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 200,
       useNativeDriver: true,
     }).start();
-  }, [fadeAnim]);
+  }, [fadeAnim, source]);
 
   const handleSubmit = useCallback(async () => {
     const trimmed = email.trim();
@@ -55,6 +58,7 @@ export default function ProUnlockModal({ visible, onClose }: ProNotifyModalProps
     try {
       await new Promise((resolve) => setTimeout(resolve, 600));
       console.log('[ProNotify] Email captured:', trimmed);
+      trackEmailSubmittedPro(source);
       setEmail('');
       setConfirmed(true);
       setTimeout(() => {
@@ -66,7 +70,7 @@ export default function ProUnlockModal({ visible, onClose }: ProNotifyModalProps
     } finally {
       setIsSubmitting(false);
     }
-  }, [email, onClose]);
+  }, [email, onClose, source]);
 
   const handleClose = useCallback(() => {
     setError('');

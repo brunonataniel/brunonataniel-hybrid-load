@@ -7,6 +7,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
 import { AppProvider } from "@/providers/AppProvider";
 import AnimatedSplash from "@/components/AnimatedSplash";
+import { injectPlausibleScript } from '@/utils/analytics';
 
 void SplashScreen.preventAutoHideAsync().catch(() => {});
 console.log('[RootLayout] Initializing app v2');
@@ -34,6 +35,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     void SplashScreen.hideAsync();
+    injectPlausibleScript();
   }, []);
 
   useEffect(() => {

@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Swords, Zap, Activity, Waves, Footprints, ChevronRight, Shield, Building2, Mail, BarChart3, Gauge, ShieldHalf, Dumbbell, BrainCircuit, ScanLine, ShieldCheck } from 'lucide-react-native';
 import { useWindowDimensions } from 'react-native';
 import { Colors } from '@/constants/colors';
+import { trackClickedOpenCalculator, trackClickedSubscribe, trackEmailSubmittedLanding } from '@/utils/analytics';
 
 const ROADMAP_FEATURES = [
   {
@@ -226,6 +227,7 @@ export default function LandingScreen() {
 
       if (response.ok) {
         console.log('[Landing] Formspree submission success');
+        trackEmailSubmittedLanding();
         setSubmitState('success');
         setEmail('');
       } else {
@@ -330,7 +332,7 @@ export default function LandingScreen() {
           <TouchableOpacity
             style={styles.ctaButton}
             activeOpacity={0.85}
-            onPress={() => router.push('/(tabs)/calculator')}
+            onPress={() => { trackClickedOpenCalculator(); router.push('/(tabs)/calculator'); }}
             testID="landing-mid-cta"
           >
             <Text style={styles.ctaText}>OPEN CALCULATOR</Text>
@@ -433,7 +435,7 @@ export default function LandingScreen() {
           <TouchableOpacity
             style={styles.ctaButton}
             activeOpacity={0.85}
-            onPress={() => router.push('/(tabs)/calculator')}
+            onPress={() => { trackClickedOpenCalculator(); router.push('/(tabs)/calculator'); }}
             testID="landing-cta"
           >
             <Text style={styles.ctaText}>OPEN CALCULATOR</Text>
@@ -503,7 +505,7 @@ export default function LandingScreen() {
                 submitState === 'loading' && styles.claimButtonDisabled,
               ]}
               activeOpacity={0.8}
-              onPress={handleClaim}
+              onPress={() => { trackClickedSubscribe(); void handleClaim(); }}
               disabled={submitState === 'loading' || !email.trim()}
               testID="waitlist-claim-button"
             >
