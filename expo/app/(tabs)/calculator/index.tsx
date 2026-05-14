@@ -325,20 +325,20 @@ export default function CalculatorScreen() {
               <View style={styles.headerRight}>
                 <View style={styles.unitPicker}>
                   <TouchableOpacity
-                    testID="unit-lbs"
-                    style={[styles.unitOption, unit === 'lbs' && styles.unitOptionActive]}
-                    onPress={() => handleUnitChange('lbs')}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={[styles.unitOptionText, unit === 'lbs' && styles.unitOptionTextActive]}>LBS</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
                     testID="unit-kg"
-                    style={[styles.unitOption, unit === 'kg' && styles.unitOptionActive]}
+                    style={[styles.unitOption, unit === 'kg' && styles.unitOptionActiveKg]}
                     onPress={() => handleUnitChange('kg')}
                     activeOpacity={0.7}
                   >
-                    <Text style={[styles.unitOptionText, unit === 'kg' && styles.unitOptionTextActive]}>KG</Text>
+                    <Text style={[styles.unitOptionText, unit === 'kg' && styles.unitOptionTextActiveKg]}>KG</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    testID="unit-lbs"
+                    style={[styles.unitOption, unit === 'lbs' && styles.unitOptionActiveLbs]}
+                    onPress={() => handleUnitChange('lbs')}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[styles.unitOptionText, unit === 'lbs' && styles.unitOptionTextActiveLbs]}>LBS</Text>
                   </TouchableOpacity>
                 </View>
                 <TouchableOpacity
@@ -580,27 +580,43 @@ const styles = StyleSheet.create({
   unitPicker: {
     flexDirection: 'row' as const,
     backgroundColor: Colors.surface,
-    borderRadius: 10,
+    borderRadius: 12,
     padding: 3,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   unitOption: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingVertical: 7,
-    borderRadius: 7,
+    borderRadius: 9,
   },
-  unitOptionActive: {
-    backgroundColor: Colors.surfaceElevated,
+  unitOptionActiveKg: {
+    backgroundColor: Colors.accent,
+    shadowColor: Colors.accent,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+  },
+  unitOptionActiveLbs: {
+    backgroundColor: '#FF6B35',
+    shadowColor: '#FF6B35',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
   },
   unitOptionText: {
     fontSize: 13,
-    fontWeight: '600' as const,
+    fontWeight: '700' as const,
     color: Colors.textSecondary,
-    opacity: 0.8,
+    opacity: 0.85,
+    letterSpacing: 0.5,
   },
-  unitOptionTextActive: {
-    color: Colors.textPrimary,
+  unitOptionTextActiveKg: {
+    color: '#000000',
+    opacity: 1,
+  },
+  unitOptionTextActiveLbs: {
+    color: '#FFFFFF',
     opacity: 1,
   },
   resetButton: {
