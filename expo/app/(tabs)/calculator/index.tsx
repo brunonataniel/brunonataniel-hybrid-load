@@ -598,8 +598,8 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
   unitOptionActiveLbs: {
-    backgroundColor: '#FF6B35',
-    shadowColor: '#FF6B35',
+    backgroundColor: Colors.accent,
+    shadowColor: Colors.accent,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.5,
     shadowRadius: 8,
@@ -616,7 +616,7 @@ const styles = StyleSheet.create({
     opacity: 1,
   },
   unitOptionTextActiveLbs: {
-    color: '#FFFFFF',
+    color: '#000000',
     opacity: 1,
   },
   resetButton: {
